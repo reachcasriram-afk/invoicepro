@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>InvoicePro — Offline CA Invoicing</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23b8863b'/%3E%3Ctext x='32' y='46' font-size='40' font-family='Arial' font-weight='700' text-anchor='middle' fill='%2314213d'%3E%E2%82%B9%3C/text%3E%3C/svg%3E">
 <style>
 :root{
   --navy:#14213d; --navy-2:#1c2d52; --gold:#b8863b; --gold-2:#d6a75c;
@@ -93,8 +94,9 @@ h1,h2,h3,h4{margin:0 0 4px;font-weight:600;color:var(--navy);}
 }
 @media (max-width:600px){
   .g2,.g3{grid-template-columns:1fr;}
-  .g4{grid-template-columns:1fr 1fr;}
-  .stat-card .num{font-size:18px;}
+  .g4{grid-template-columns:1fr;}
+  .stat-card .num{font-size:20px;}
+  .hero>div:last-child{text-align:left !important;}
   #quickNewInvBtn .lbl-long{display:none;}
   .inv-doc{padding:14px;}
   .inv-head,.inv-parties,.inv-foot-grid,.inv-bottom{flex-direction:column;}
@@ -148,6 +150,77 @@ tr:hover td{background:#fafbfd;}
 .icon-link{cursor:pointer;color:var(--blue);font-size:12px;font-weight:600;margin-right:10px;}
 .icon-link.danger{color:var(--red);}
 .empty-state{text-align:center;padding:50px 20px;color:var(--text-dim);}
+/* ---- visual refresh ---- */
+body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;}
+.num,.stat-card .num,td.num,.totals-box,.inv-totals{font-variant-numeric:tabular-nums;}
+.card{border-radius:14px;border-color:#e6e9f1;box-shadow:0 1px 2px rgba(20,33,61,.04),0 4px 14px rgba(20,33,61,.05);}
+.card h3{font-size:12.5px;letter-spacing:.6px;}
+.btn{border-radius:9px;transition:background .12s,border-color .12s,box-shadow .12s,transform .12s;}
+.btn-primary:hover,.btn-gold:hover{box-shadow:0 4px 12px rgba(20,33,61,.18);transform:translateY(-1px);}
+.brand{display:flex;align-items:center;gap:11px;}
+.brand-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--gold-2),var(--gold));color:#241a08;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;box-shadow:0 4px 12px rgba(184,134,59,.35);flex:0 0 38px;}
+.nav-item{position:relative;transition:background .12s,color .12s;}
+.nav-item.active{box-shadow:0 4px 12px rgba(184,134,59,.3);font-weight:600;}
+.nav-foot{cursor:pointer;}
+.nav-foot:hover{color:#fff;}
+.stat-card .lbl-sub{font-size:11px;color:#9aa3b2;margin-top:1px;}
+.nav-foot .lock{display:flex;align-items:center;gap:6px;color:#d6e0f5;font-weight:600;font-size:11.5px;margin-bottom:3px;}
+#topbar{box-shadow:0 1px 0 rgba(20,33,61,.02);}
+th{background:#f7f8fb;}
+tr:hover td{background:#f9fafc;}
+/* stat cards */
+.stat-card{position:relative;overflow:hidden;display:flex;gap:14px;align-items:flex-start;}
+.stat-card.click{cursor:pointer;transition:transform .12s,box-shadow .12s;}
+.stat-card.click:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,33,61,.1);}
+.stat-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--navy));}
+.stat-ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 40px;background:var(--accent-bg,#eef1f7);color:var(--accent,var(--navy));}
+.stat-body{min-width:0;}
+.acc-blue{--accent:var(--blue);--accent-bg:var(--blue-bg);}
+.acc-green{--accent:var(--green);--accent-bg:var(--green-bg);}
+.acc-amber{--accent:var(--amber);--accent-bg:var(--amber-bg);}
+.acc-red{--accent:var(--red);--accent-bg:var(--red-bg);}
+.acc-gold{--accent:var(--gold);--accent-bg:#fbf3e4;}
+/* dashboard hero */
+.hero{background:linear-gradient(120deg,var(--navy) 0%,var(--navy-2) 60%,#2a3f6e 100%);color:#fff;border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(214,167,92,.35),rgba(214,167,92,0) 70%);pointer-events:none;}
+.hero h2{color:#fff;font-size:21px;margin:0 0 4px;}
+.hero .hero-sub{color:#c3cde4;font-size:12.5px;}
+.hero-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;font-size:11.5px;font-weight:600;background:rgba(255,255,255,.1);color:#e7ecf7;border:1px solid rgba(255,255,255,.14);cursor:pointer;}
+.chip:hover{background:rgba(255,255,255,.18);}
+.hero .btn-gold{position:relative;z-index:1;padding:10px 18px;font-size:13.5px;}
+/* attention list & checklist */
+.attn{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid #f0f2f6;}
+.attn:last-child{border-bottom:none;}
+.attn-ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 34px;background:var(--accent-bg);color:var(--accent);}
+.attn-txt{flex:1;min-width:0;font-size:13px;}
+.attn-txt b{color:var(--navy);}
+.attn-txt .hint{margin-top:1px;}
+.all-good{display:flex;align-items:center;gap:10px;color:var(--green);font-weight:600;font-size:13px;padding:6px 0;}
+.progress{height:7px;background:#eef1f6;border-radius:6px;overflow:hidden;margin:4px 0 12px;}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-2));border-radius:6px;}
+.check-item{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px;cursor:pointer;}
+.check-item .tick{width:22px;height:22px;border-radius:50%;border:2px solid #cfd5e2;display:flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 22px;color:#fff;}
+.check-item.done .tick{background:var(--green);border-color:var(--green);}
+.check-item.done .lbl{color:var(--text-dim);text-decoration:line-through;}
+.check-item:not(.done):hover .lbl{color:var(--blue);}
+/* friendly empty states */
+.empty-ic{width:54px;height:54px;border-radius:50%;background:#f1f3f8;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 10px;}
+.empty-title{font-weight:700;color:var(--navy);font-size:14px;margin-bottom:4px;}
+.empty-state .btn{margin-top:12px;}
+/* privacy / info */
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:6px 0 16px;}
+.info-tile{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fbfcfe;}
+.info-tile .t-ic{font-size:22px;margin-bottom:6px;}
+.info-tile b{display:block;color:var(--navy);font-size:13.5px;margin-bottom:4px;}
+.info-tile p{margin:0;font-size:12.5px;color:#4b5563;line-height:1.5;}
+.privacy-card{display:flex;gap:14px;align-items:flex-start;background:linear-gradient(120deg,#f3f7ff,#fdf8ef);border:1px solid #e3e9f5;border-radius:14px;padding:14px 16px;margin-bottom:16px;}
+.privacy-card .p-ic{font-size:24px;}
+.privacy-card p{margin:2px 0 0;font-size:12.5px;color:#4b5563;line-height:1.55;}
+.toast{display:flex;align-items:center;gap:8px;border-radius:10px;}
+#modalRoot.open .modal{animation:pop .14s ease-out;}
+@keyframes pop{from{transform:translateY(6px) scale(.985);opacity:0;}to{transform:none;opacity:1;}}
+@media (max-width:760px){.info-grid{grid-template-columns:1fr;}.hero{padding:16px;}.hero h2{font-size:18px;}}
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px;}
 .toolbar input,.toolbar select{padding:7px 10px;border:1px solid var(--border);border-radius:7px;}
 .pill-tabs{display:flex;gap:6px;flex-wrap:wrap;}
@@ -234,8 +307,8 @@ tr:hover td{background:#fafbfd;}
 <div id="shell">
   <aside id="sidebar">
     <div class="brand">
-      <div class="logo-txt">InvoicePro</div>
-      <div class="logo-sub">Offline CA Invoicing Suite</div>
+      <div class="brand-mark">&#8377;</div>
+      <div><div class="logo-txt">InvoicePro</div><div class="logo-sub">CA Billing &amp; Collections</div></div>
     </div>
     <div class="nav-group" id="navGroup">
       <div class="nav-item" data-route="dashboard"><span class="nav-icon">&#9632;</span>Dashboard</div>
@@ -247,7 +320,7 @@ tr:hover td{background:#fafbfd;}
       <div class="nav-item" data-route="settings"><span class="nav-icon">&#9881;</span>Settings</div>
     </div>
     <div class="nav-spacer"></div>
-    <div class="nav-foot">100% offline &middot; data stays on this PC</div>
+    <div class="nav-foot" id="privacyFoot" title="How your data is stored"><div class="lock">&#128274; Private &amp; offline</div>Your data stays only in this browser. Back up regularly.</div>
   </aside>
   <div id="navOverlay"></div>
   <div id="mainCol">
@@ -479,7 +552,7 @@ function toast(msg,type){
  const root=document.getElementById('toastRoot');
  const el=document.createElement('div');
  el.className='toast'+(type?' '+type:'');
- el.textContent=msg;
+ el.textContent=(type==='ok'?'✓  ':type==='err'?'⚠  ':'')+msg;
  root.appendChild(el);
  setTimeout(()=>{el.remove();},3200);
 }
@@ -524,6 +597,31 @@ function confirmAsync(title,msg,okLabel){
   document.getElementById('confirmAsyncOk').onclick=()=>{pendingConfirm=null;closeModal();resolve(true);};
  });
 }
+
+/* ============ WELCOME / PRIVACY INFO ============ */
+function openPrivacyInfo(firstRun){
+ const bs=backupStatus();
+ openModal(
+  '<div class="modal-head"><h3>'+(firstRun?'Welcome to InvoicePro':'Your Data, Privacy &amp; Backups')+'</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>'+
+  (firstRun?'<p style="margin:0 0 12px;color:#4b5563;font-size:13.5px;">Professional fee billing, collections and receivables for your CA practice. Two things to know before you start:</p>':'')+
+  '<div class="info-grid">'+
+   '<div class="info-tile"><div class="t-ic">&#128274;</div><b>Your data stays private</b><p>Everything you enter is stored <b style="display:inline;font-size:inherit;">only in this browser on this device</b>. Nothing is uploaded anywhere — nobody else can see it, including the app\'s author.</p></div>'+
+   '<div class="info-tile"><div class="t-ic">&#128190;</div><b>Back up regularly</b><p>Clearing browser data, switching browser or changing computer will lose your records unless you have a backup. Use <b style="display:inline;font-size:inherit;">Settings &rarr; Data &rarr; Download Backup</b>. The Dashboard reminds you after '+BACKUP_STALE_DAYS+' days.</p></div>'+
+   '<div class="info-tile"><div class="t-ic">&#9889;</div><b>Works offline</b><p>No login, no internet needed after the page loads. To use your data on another computer, restore your backup file there.</p></div>'+
+  '</div>'+
+  '<div class="hint" style="margin-bottom:14px;">'+(bs.at?'Last backup on this device: <b>'+esc(new Date(bs.at).toLocaleString('en-IN'))+'</b>':'No backup has been taken on this device yet.')+'</div>'+
+  '<div class="row" style="justify-content:flex-end;flex-wrap:wrap;">'+
+   (firstRun
+    ? '<button type="button" class="btn" id="piExplore">Explore first</button><button type="button" class="btn btn-gold" id="piSetup">Set up my firm &rarr;</button>'
+    : '<button type="button" class="btn" id="piBackup">Download Backup Now</button><button type="button" class="btn btn-primary" onclick="closeModal()">Got it</button>')+
+  '</div>', true);
+ const done=()=>setMeta('welcomeSeen',true);
+ const ex=document.getElementById('piExplore'); if(ex)ex.onclick=()=>{done();closeModal();};
+ const su=document.getElementById('piSetup'); if(su)su.onclick=()=>{done();closeModal();navigate('settings/firm');};
+ const bk=document.getElementById('piBackup'); if(bk)bk.onclick=async()=>{closeModal();await downloadBackup();renderRoute();};
+ if(firstRun)done();
+}
+document.getElementById('privacyFoot').addEventListener('click',()=>{document.body.classList.remove('nav-open');openPrivacyInfo(false);});
 
 /* ============ GST / CALC ENGINE ============ */
 function calcLine(line, gstApplicable, interState){
@@ -698,19 +796,61 @@ function renderDashboard(app){
  const bs=backupStatus();
  const showBackupBanner=bs.stale && (state.invoices.length>0 || state.clients.length>0);
 
+ const f=state.firm;
+ const hr=now.getHours();
+ const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+ const who=f.signatoryName||f.name||'';
+ const monthName=now.toLocaleDateString('en-IN',{month:'long'});
+
+ const steps=[
+  {done:!!f.name, label:'Add your firm details (name, address, PAN/GSTIN)', go:'settings/firm'},
+  {done:!!(f.bankName||f.upi), label:'Add bank / UPI details so clients know how to pay', go:'settings/firm'},
+  {done:state.clients.length>0, label:'Add your first client', go:'clients'},
+  {done:state.invoices.some(isBilled), label:'Generate your first invoice', go:'invoice/new'},
+  {done:!!bs.at, label:'Take your first backup (keeps your data safe)', go:'settings/data'}
+ ];
+ const stepsDone=steps.filter(s=>s.done).length;
+ const showSteps=stepsDone<steps.length && !(state.meta||{}).setupHidden;
+
+ const attn=[];
+ const drafts=state.invoices.filter(i=>i.status==='Draft');
+ if(drafts.length)attn.push({acc:'blue',ic:'&#128221;',t:'<b>'+drafts.length+' draft invoice'+(drafts.length>1?'s':'')+'</b> waiting to be issued',h:'Drafts are not counted in billing until you issue them.',btn:'Review',go:'invoices',preset:'status=Draft'});
+ if(overdueList.length)attn.push({acc:'red',ic:'&#9888;',t:'<b>'+overdueList.length+' overdue invoice'+(overdueList.length>1?'s':'')+'</b> &middot; '+fmtMoney(overdueAmt),h:'Past the due date — a reminder usually helps.',btn:'Follow up',go:'collections',preset:'status=overdue'});
+ const old=outstandingAllList.filter(i=>ageInDays(i.invoiceDate)>60);
+ if(old.length)attn.push({acc:'amber',ic:'&#8987;',t:'<b>'+old.length+' invoice'+(old.length>1?'s':'')+' unpaid for over 60 days</b> &middot; '+fmtMoney(old.reduce((s,i)=>s+invoiceBalance(i),0)),h:'Send a WhatsApp or email reminder from Collections.',btn:'Collections',go:'collections'});
+ if(dueSuggestions.length)attn.push({acc:'gold',ic:'&#128260;',t:'<b>'+dueSuggestions.length+' recurring invoice'+(dueSuggestions.length>1?'s':'')+'</b> ready to prepare',h:'From your saved client fees — nothing is issued without you.',btn:'View',scroll:'prepCard'});
+ const noContact=Object.values(byClient).filter(c=>{const cl=state.clients.find(x=>x.id===c.id);return cl&&!cl.mobile&&!cl.email;});
+ if(noContact.length)attn.push({acc:'amber',ic:'&#128222;',t:'<b>'+noContact.length+' client'+(noContact.length>1?'s':'')+' with dues</b> have no mobile or email',h:'Add contact details to send payment reminders.',btn:'Update',go:'clients'});
+ if(f.gstApplicable && !f.gstin)attn.push({acc:'red',ic:'&#127991;',t:'<b>GSTIN missing</b> in firm details',h:'GST is applied on invoices but your GSTIN is not printed.',btn:'Fix',go:'settings/firm'});
+
  app.innerHTML=
+ '<div class="hero"><div style="position:relative;z-index:1;"><h2>'+greet+(who?', '+esc(who):'')+'</h2>'+
+  '<div class="hero-sub">'+esc(now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'}))+' &middot; FY '+esc(thisFY)+'</div>'+
+  '<div class="hero-chips"><span class="chip" id="heroPrivacy">&#128274; Private &amp; offline &mdash; data stays in this browser</span>'+
+  '<span class="chip" id="heroBackup">&#128190; '+(bs.at?'Last backup '+(bs.days===0?'today':bs.days+' day'+(bs.days>1?'s':'')+' ago'):'No backup yet')+'</span></div></div>'+
+  '<div style="position:relative;z-index:1;text-align:right;"><div class="hero-sub">Outstanding</div><div style="font-size:24px;font-weight:700;color:var(--gold-2);font-variant-numeric:tabular-nums;">'+fmtMoney(outstandingAll)+'</div></div></div>'+
  (showBackupBanner?'<div class="backup-banner"><span>'+(bs.at?'Last backup was '+bs.days+' days ago.':'You have not taken a backup yet.')+' Your data lives only in this browser — clearing browser data will erase it.</span><button type="button" class="btn btn-sm btn-gold" id="dashBackupBtn">Backup Now</button></div>':'')+
+ (showSteps?'<div class="card" style="margin-bottom:16px;"><div class="row between"><h3 style="margin:0;">Getting Started &middot; '+stepsDone+' of '+steps.length+'</h3><button type="button" class="link-btn" id="hideSetupBtn">Hide</button></div>'+
+  '<div class="progress"><div style="width:'+Math.round(stepsDone/steps.length*100)+'%"></div></div>'+
+  steps.map(s=>'<div class="check-item'+(s.done?' done':'')+'"'+(s.done?'':goAttrs(s.go))+'><span class="tick">'+(s.done?'&#10003;':'')+'</span><span class="lbl">'+esc(s.label)+'</span></div>').join('')+'</div>':'')+
  '<div class="grid g4" style="margin-bottom:16px;">'+
-  statCard('Billing — Current FY',fmtMoney(billedFY),thisFY)+
-  statCard('Billing — Current Month',fmtMoney(billedMonth),now.toLocaleDateString('en-IN',{month:'long'}))+
-  statCard('Collections — Current FY',fmtMoney(collectedFY),thisFY)+
-  statCard('Collections — Current Month',fmtMoney(collectedMonth),now.toLocaleDateString('en-IN',{month:'long'}))+
+  statCard('Billing — Current FY',fmtMoney(billedFY),thisFY,{icon:'&#128196;',acc:'blue',go:'reports'})+
+  statCard('Billing — Current Month',fmtMoney(billedMonth),monthName,{icon:'&#128197;',acc:'blue',go:'reports'})+
+  statCard('Collections — Current FY',fmtMoney(collectedFY),thisFY,{icon:'&#128176;',acc:'green',go:'reports'})+
+  statCard('Collections — Current Month',fmtMoney(collectedMonth),monthName,{icon:'&#9989;',acc:'green',go:'reports'})+
  '</div>'+
- '<div class="grid g2" style="margin-bottom:18px;">'+
-  '<div class="card stat-card" style="cursor:pointer;" onclick="navigate(\'collections\')"><div class="num">'+fmtMoney(outstandingAll)+'</div><div class="lbl">Total Outstanding &middot; '+outstandingAllList.length+' invoice(s)</div></div>'+
-  (usesDueDates?'<div class="card stat-card" style="cursor:pointer;" onclick="navigate(\'collections\')"><div class="num" style="color:var(--red);">'+fmtMoney(overdueAmt)+'</div><div class="lbl">Overdue &middot; '+overdueList.length+' invoice(s)</div></div>':'<div class="card stat-card"><div class="num" style="color:var(--text-dim);font-size:14px;">Not tracked</div><div class="lbl">Overdue (enable due dates on invoices to track this)</div></div>')+
+ '<div class="grid g2" style="margin-bottom:16px;">'+
+  statCard('Total Outstanding',fmtMoney(outstandingAll),outstandingAllList.length+' invoice(s)',{icon:'&#9203;',acc:'amber',go:'collections'})+
+  (usesDueDates
+   ? statCard('Overdue',fmtMoney(overdueAmt),overdueList.length+' invoice(s)',{icon:'&#9888;',acc:'red',go:'collections',preset:'status=overdue',numStyle:'color:var(--red)'})
+   : statCard('Overdue (add due dates on invoices to track this)','Not tracked','',{icon:'&#128198;',numStyle:'color:var(--text-dim);font-size:15px'}))+
  '</div>'+
- (dueSuggestions.length?'<div class="card" style="margin-bottom:18px;"><h3>Invoices to Prepare</h3><div class="hint" style="margin-bottom:10px;">Recurring engagements due for billing. Nothing is issued automatically — review and generate.</div>'+renderEngagementSuggestions(dueSuggestions)+'</div>':'')+
+ '<div class="card" style="margin-bottom:16px;"><h3>Needs Your Attention</h3>'+
+  (attn.length? attn.map(a=>'<div class="attn acc-'+a.acc+'"><div class="attn-ic">'+a.ic+'</div><div class="attn-txt">'+a.t+'<div class="hint">'+esc(a.h)+'</div></div>'+
+   '<button type="button" class="btn btn-sm"'+(a.go?goAttrs(a.go,a.preset):' data-scroll="'+a.scroll+'"')+'>'+esc(a.btn)+'</button></div>').join('')
+   : '<div class="all-good">&#10004; All caught up — nothing needs your attention right now.</div>')+
+ '</div>'+
+ (dueSuggestions.length?'<div class="card" id="prepCard" style="margin-bottom:18px;"><h3>Invoices to Prepare</h3><div class="hint" style="margin-bottom:10px;">Recurring engagements due for billing. Nothing is issued automatically — review and generate.</div>'+renderEngagementSuggestions(dueSuggestions)+'</div>':'')+
  '<div class="grid g2">'+
   '<div class="card"><h3>Recent Invoices</h3>'+renderMiniInvoiceList(recent)+'</div>'+
   '<div class="card"><h3>Top Outstanding Clients</h3>'+renderTopOutstandingList(topOutstanding)+'</div>'+
@@ -718,6 +858,11 @@ function renderDashboard(app){
 
  const dashBackupBtn=document.getElementById('dashBackupBtn');
  if(dashBackupBtn)dashBackupBtn.addEventListener('click',async()=>{await downloadBackup();renderRoute();});
+ document.getElementById('heroPrivacy').addEventListener('click',()=>openPrivacyInfo(false));
+ document.getElementById('heroBackup').addEventListener('click',()=>openPrivacyInfo(false));
+ const hideSetupBtn=document.getElementById('hideSetupBtn');
+ if(hideSetupBtn)hideSetupBtn.addEventListener('click',async()=>{await setMeta('setupHidden',true);renderRoute();});
+ app.querySelectorAll('[data-scroll]').forEach(b=>b.addEventListener('click',()=>{const t=document.getElementById(b.dataset.scroll);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}));
  document.querySelectorAll('.engSuggChk').forEach(c=>c.addEventListener('change',updateBulkGenBtn));
  function updateBulkGenBtn(){
   const btn=document.getElementById('genSelectedBtn');
@@ -755,7 +900,7 @@ function renderDashboard(app){
  });
 }
 function renderTopOutstandingList(list){
- if(!list.length)return '<div class="empty-state">Nothing outstanding. Great job!</div>';
+ if(!list.length)return emptyState('&#127881;','Nothing outstanding','Every issued invoice has been paid in full.');
  return '<table><tbody>'+list.map(c=>{
   const age=ageInDays(c.oldest);
   return '<tr style="cursor:pointer" onclick="navigate(\'client/ledger/'+c.id+'\')">'+
@@ -884,11 +1029,28 @@ async function generateDraftFromSuggestion(s){
  const eng=state.engagements.find(e=>e.id===s.engagementId);
  if(eng){eng.lastGeneratedPeriod=s.periodKey; await dbPut('engagements',eng);}
 }
-function statCard(lbl,num,sub){
- return '<div class="card stat-card"><div class="num">'+esc(num)+'</div><div class="lbl">'+esc(lbl)+(sub?' · '+esc(sub):'')+'</div></div>';
+function statCard(lbl,num,sub,o){
+ o=o||{};
+ return '<div class="card stat-card'+(o.acc?' acc-'+o.acc:'')+(o.go?' click':'')+'"'+goAttrs(o.go,o.preset)+'>'+
+  (o.icon?'<div class="stat-ic">'+o.icon+'</div>':'')+
+  '<div class="stat-body"><div class="num"'+(o.numStyle?' style="'+o.numStyle+'"':'')+'>'+esc(num)+'</div><div class="lbl">'+esc(lbl)+'</div>'+(sub?'<div class="lbl-sub">'+esc(sub)+'</div>':'')+'</div></div>';
 }
+function goAttrs(go,preset){return go?' data-go="'+esc(go)+'"'+(preset?' data-preset="'+esc(preset)+'"':''):'';}
+function emptyState(icon,title,text,ctaLabel,ctaGo){
+ return '<div class="empty-state"><div class="empty-ic">'+icon+'</div><div class="empty-title">'+esc(title)+'</div><div>'+esc(text)+'</div>'+
+  (ctaLabel?'<button type="button" class="btn btn-sm btn-gold"'+goAttrs(ctaGo)+'>'+esc(ctaLabel)+'</button>':'')+'</div>';
+}
+// A page can be opened pre-filtered: data-preset="status=Draft" is read once by the next page render.
+let routePreset=null;
+function takePreset(page){const p=routePreset;routePreset=null;return p&&p.page===page?p:null;}
+document.getElementById('app').addEventListener('click',(e)=>{
+ const el=e.target.closest('[data-go]');
+ if(!el)return;
+ if(el.dataset.preset){const kv=el.dataset.preset.split('=');routePreset={page:el.dataset.go,key:kv[0],value:kv[1]};}
+ if(currentRoute()===el.dataset.go)renderRoute(); else navigate(el.dataset.go);
+});
 function renderMiniInvoiceList(list,showBalance){
- if(!list.length)return '<div class="empty-state">Nothing to show yet.</div>';
+ if(!list.length)return emptyState('&#128196;','No invoices yet','Your latest invoices will appear here.','Create your first invoice','invoice/new');
  return '<table><tbody>'+list.map(i=>{
   const client=clientName(i);
   const bal=(i.grandTotal-i.amountReceived);
@@ -1110,7 +1272,7 @@ function renderClients(app){
   const q=(filter||'').toLowerCase();
   const rows=state.clients.filter(c=>!q || (c.name||'').toLowerCase().includes(q) || (c.gstin||'').toLowerCase().includes(q) || (c.mobile||'').includes(q));
   const tbody=document.getElementById('clientRows');
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state">No clients found.</div></td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="6">'+(state.clients.length?emptyState('&#128269;','No matching clients','Try a different name, GSTIN or mobile number.'):emptyState('&#128100;','No clients yet','Add a client once — their address, GSTIN and state fill into every invoice automatically.'))+'</td></tr>';return;}
   tbody.innerHTML=rows.map(c=>
    '<tr><td><b>'+esc(c.name)+'</b>'+(c.contactPerson?'<br><span style="color:var(--text-dim);font-size:11.5px;">'+esc(c.contactPerson)+'</span>':'')+'</td>'+
    '<td>'+esc(c.gstin||'-')+'</td><td>'+esc(c.stateName||'-')+'</td><td>'+esc(c.mobile||'-')+'</td><td>'+esc(c.email||'-')+'</td>'+
@@ -1263,7 +1425,7 @@ function renderEngagementsSettings(app){
  '<div class="tbl-wrap"><table><thead><tr><th>Client</th><th>Service</th><th>Frequency</th><th class="num">Fee</th><th>GST%</th><th>Status</th><th></th></tr></thead><tbody id="engRows"></tbody></table></div>';
  function draw(){
   const tbody=document.getElementById('engRows');
-  if(!state.engagements.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state">No recurring fee engagements yet.</div></td></tr>';return;}
+  if(!state.engagements.length){tbody.innerHTML='<tr><td colspan="7">'+emptyState('&#128260;','No saved client fees yet','Save a client\'s regular fee (e.g. monthly GST filing) and the Dashboard will tell you when the next invoice is due.')+'</td></tr>';return;}
   tbody.innerHTML=state.engagements.map(e=>{
    const client=state.clients.find(c=>c.id===e.clientId);
    const svc=state.services.find(s=>s.id===e.serviceId);
@@ -2064,6 +2226,8 @@ function printInvoice(inv){
 /* ============ INVOICE REGISTER ============ */
 function renderInvoiceRegister(app){
  let filters={q:'',client:'',fy:'',status:'',service:''};
+ const preset=takePreset('invoices');
+ if(preset&&preset.key==='status')filters.status=preset.value;
  const fyList=Array.from(new Set(state.invoices.map(i=>i.fy))).sort().reverse();
  app.innerHTML=
  '<div class="toolbar">'+
@@ -2085,7 +2249,7 @@ function renderInvoiceRegister(app){
  function draw(){
   const rows=filteredRows();
   const tbody=document.getElementById('regRows');
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="11"><div class="empty-state">No invoices found.</div></td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="11">'+(state.invoices.length?emptyState('&#128269;','No matching invoices','Try clearing the search or filters.'):emptyState('&#128196;','No invoices yet','Pick a client, a service and the fee — the rest is filled in for you.','Create your first invoice','invoice/new'))+'</td></tr>';return;}
   tbody.innerHTML=rows.map(i=>{
    const gst=round2((i.cgstTotal||0)+(i.sgstTotal||0)+(i.igstTotal||0));
    const outstanding=round2(i.grandTotal-i.amountReceived);
@@ -2097,6 +2261,7 @@ function renderInvoiceRegister(app){
     '<td class="actions-cell"><span class="icon-link" onclick="navigate(\'invoice/view/'+i.id+'\')">View</span></td></tr>';
   }).join('');
  }
+ document.getElementById('regStatus').value=filters.status;
  draw();
  document.getElementById('regSearch').addEventListener('input',debounce(e=>{filters.q=e.target.value;draw();},120));
  document.getElementById('regFy').addEventListener('change',e=>{filters.fy=e.target.value;draw();});
@@ -2122,6 +2287,8 @@ function downloadBlob(blob,filename){
 /* ============ COLLECTIONS CENTRE ============ */
 function renderCollections(app){
  let filters={status:'outstanding',client:'',fy:''};
+ const preset=takePreset('collections');
+ if(preset&&preset.key==='status')filters.status=preset.value;
  const fyList=Array.from(new Set(state.invoices.map(i=>i.fy))).sort().reverse();
  const clientOptions=state.clients.slice().sort((a,b)=>a.name.localeCompare(b.name));
  app.innerHTML=
@@ -2138,7 +2305,8 @@ function renderCollections(app){
   const list=baseOutstanding();
   const buckets={'0-30 Days':0,'31-60 Days':0,'61-90 Days':0,'Above 90 Days':0};
   list.forEach(i=>{buckets[ageingBucket(ageInDays(i.invoiceDate))]+=invoiceBalance(i);});
-  document.getElementById('ageingCards').innerHTML=Object.keys(buckets).map(k=>statCard(k,fmtMoney(buckets[k]),'')).join('');
+  const acc={'0-30 Days':'green','31-60 Days':'amber','61-90 Days':'gold','Above 90 Days':'red'};
+  document.getElementById('ageingCards').innerHTML=Object.keys(buckets).map(k=>statCard(k,fmtMoney(buckets[k]),'',{acc:acc[k],icon:'&#9201;'})).join('');
  }
  function draw(){
   let rows=baseOutstanding();
@@ -2149,7 +2317,7 @@ function renderCollections(app){
   if(filters.fy)rows=rows.filter(i=>i.fy===filters.fy);
   rows=rows.slice().sort((a,b)=>a.invoiceDate.localeCompare(b.invoiceDate));
   const tbody=document.getElementById('colRows');
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state">Nothing to collect here.</div></td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="10">'+emptyState('&#127881;','Nothing to collect here','No outstanding invoices match this view.')+'</td></tr>';return;}
   tbody.innerHTML=rows.map(i=>{
    const bal=invoiceBalance(i);
    const age=ageInDays(i.invoiceDate);
@@ -2168,6 +2336,7 @@ function renderCollections(app){
     '</td></tr>';
   }).join('');
  }
+ document.getElementById('colStatus').value=filters.status;
  drawAgeing(); draw();
  document.getElementById('colStatus').addEventListener('change',e=>{filters.status=e.target.value;draw();});
  document.getElementById('colClient').addEventListener('change',e=>{filters.client=e.target.value;draw();});
@@ -2332,6 +2501,10 @@ function renderBackup(app){
  const bs=backupStatus();
  const lastBackupAt=bs.at, daysSince=bs.days, warnStale=bs.stale;
  app.innerHTML=
+ '<div class="privacy-card"><div class="p-ic">&#128274;</div><div><b style="color:var(--navy);">Where is my data?</b>'+
+  '<p>Your data is stored <b>only in this browser on this device</b> — nothing is uploaded, and nobody else can see it, including the app\'s author. '+
+  'If browser data is cleared, or you switch browser or computer, your records are gone unless you have a backup. '+
+  '<b>Download a backup regularly</b> and keep the file safe (e.g. a pen drive or your email). To move to another computer, restore the backup file there.</p></div></div>'+
  (lastBackupAt?
   '<div class="card" style="margin-bottom:16px;'+(warnStale?'border-color:var(--amber);':'')+'"><div class="row between">'+
    '<div>Last Backup: <b>'+esc(new Date(lastBackupAt).toLocaleString('en-IN'))+'</b></div>'+
@@ -3125,6 +3298,7 @@ async function downloadInvoicePdf(inv){
   await loadState();
   if(!location.hash)location.hash='#/dashboard';
   renderRoute();
+  if(!(state.meta||{}).welcomeSeen)openPrivacyInfo(true);
  }catch(err){
   document.getElementById('app').innerHTML='<div class="empty-state">Failed to initialise local database: '+esc(err.message||err)+'</div>';
   console.error(err);
