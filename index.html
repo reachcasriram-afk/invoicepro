@@ -1,0 +1,3135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InvoicePro — Offline CA Invoicing</title>
+<style>
+:root{
+  --navy:#14213d; --navy-2:#1c2d52; --gold:#b8863b; --gold-2:#d6a75c;
+  --bg:#f4f6fa; --card:#ffffff; --border:#e2e6ee; --text:#1f2937; --text-dim:#6b7280;
+  --green:#1c7a4d; --green-bg:#e7f6ee; --red:#b3261e; --red-bg:#fdecea; --amber:#9a6700; --amber-bg:#fff6e0;
+  --blue:#1d5fae; --blue-bg:#eaf2fc; --radius:10px;
+  --shadow:0 1px 3px rgba(20,33,61,.08), 0 1px 2px rgba(20,33,61,.06);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;}
+button,input,select,textarea{font-family:inherit;font-size:14px;}
+a{color:var(--blue);text-decoration:none;}
+h1,h2,h3,h4{margin:0 0 4px;font-weight:600;color:var(--navy);}
+#shell{display:flex;min-height:100vh;}
+#sidebar{width:236px;flex:0 0 236px;background:linear-gradient(180deg,var(--navy),var(--navy-2));color:#e7ebf5;display:flex;flex-direction:column;padding:18px 0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.brand{padding:0 20px 18px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:12px;}
+.brand .logo-txt{font-size:19px;font-weight:700;letter-spacing:.3px;color:#fff;}
+.brand .logo-sub{font-size:11px;color:#a7b3cf;margin-top:2px;}
+.nav-group{padding:0 10px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#c7d0e6;cursor:pointer;margin-bottom:2px;font-size:13.5px;font-weight:500;}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+.nav-item.active{background:var(--gold);color:#241a08;}
+.nav-icon{width:18px;text-align:center;opacity:.9;}
+.nav-spacer{flex:1;}
+.nav-foot{padding:12px 20px;font-size:11px;color:#8a97ba;border-top:1px solid rgba(255,255,255,.12);}
+#mainCol{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;background:var(--card);border-bottom:1px solid var(--border);}
+#topbar h1{font-size:18px;}
+#topbar .sub{font-size:12px;color:var(--text-dim);}
+.topbar-credit{font-size:11px;color:var(--text-dim);white-space:nowrap;letter-spacing:.1px;}
+.app-footer{text-align:center;padding:18px 20px 22px;border-top:1px solid var(--border);background:var(--bg);font-size:13px;color:var(--text);line-height:1.7;flex-shrink:0;}
+.app-footer b{color:var(--text);}
+.app-footer-copy{font-size:11.5px;color:var(--text-dim);margin-top:4px;}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:#fff;color:var(--text);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap;transition:background .12s,border-color .12s;}
+.btn:hover{background:#f4f6fa;}
+.btn-primary{background:var(--navy);border-color:var(--navy);color:#fff;}
+.btn-primary:hover{background:var(--navy-2);}
+.btn-gold{background:var(--gold);border-color:var(--gold);color:#241a08;}
+.btn-gold:hover{background:var(--gold-2);}
+.btn-danger{background:#fff;border-color:var(--red);color:var(--red);}
+.btn-danger:hover{background:var(--red-bg);}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+#scrollArea{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+#app{flex:1 0 auto;padding:22px 26px 40px;}
+.grid{display:grid;gap:16px;}
+.g2{grid-template-columns:1fr 1fr;}
+.g3{grid-template-columns:1fr 1fr 1fr;}
+.g4{grid-template-columns:repeat(4,1fr);}
+@media (max-width:980px){.g2,.g3,.g4{grid-template-columns:1fr 1fr;}}
+@media (max-width:1100px){.topbar-credit{display:none;}}
+#globalSearchInp{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;}
+.menu-btn{display:none;background:none;border:1px solid var(--border);border-radius:8px;font-size:18px;line-height:1;padding:6px 10px;cursor:pointer;color:var(--navy);}
+#navOverlay{display:none;}
+.inv-layout{grid-template-columns:1fr 380px;align-items:start;gap:18px;}
+.inv-layout .summary-card{position:sticky;top:0;}
+.inv-layout>*{min-width:0;}
+.autocomplete-wrap input[type=text]{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;}
+.backup-banner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--amber-bg);border:1px solid #f0d58a;color:var(--amber);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:13px;font-weight:600;}
+.pay-hist td{font-size:12.5px;}
+@media (max-width:980px){
+  .inv-layout{grid-template-columns:1fr;}
+  .inv-layout .summary-card{position:static;}
+}
+@media (max-width:760px){
+  #sidebar{position:fixed;left:0;top:0;z-index:150;transform:translateX(-100%);transition:transform .18s ease-out;box-shadow:4px 0 20px rgba(0,0,0,.25);}
+  body.nav-open #sidebar{transform:none;}
+  body.nav-open #navOverlay{display:block;position:fixed;inset:0;background:rgba(15,20,35,.4);z-index:140;}
+  .menu-btn{display:inline-block;}
+  #topbar{flex-wrap:wrap;gap:10px;padding:10px 12px;}
+  #topbar .sub{display:none;}
+  .topbar-title{display:flex;align-items:center;gap:10px;}
+  .topbar-actions{width:100%;}
+  #globalSearchWrap{flex:1;width:auto !important;}
+  #app{padding:14px 12px 40px;}
+  .settings-shell{flex-direction:column;gap:12px;}
+  .settings-nav{width:100%;flex:none;display:flex;overflow-x:auto;gap:4px;}
+  .settings-nav .s-item{white-space:nowrap;margin-bottom:0;}
+  .toolbar .row{flex-wrap:wrap;}
+  .line-tbl{min-width:640px;}
+  .modal{padding:16px;}
+  #modalRoot{padding:16px 8px;}
+  #toastRoot{left:12px;right:12px;bottom:12px;}
+  .app-footer{padding:12px 12px 14px;font-size:12px;}
+  .card{padding:14px;}
+}
+@media (max-width:600px){
+  .g2,.g3{grid-template-columns:1fr;}
+  .g4{grid-template-columns:1fr 1fr;}
+  .stat-card .num{font-size:18px;}
+  #quickNewInvBtn .lbl-long{display:none;}
+  .inv-doc{padding:14px;}
+  .inv-head,.inv-parties,.inv-foot-grid,.inv-bottom{flex-direction:column;}
+  .inv-title-block{text-align:left;}
+  .inv-totals{width:100%;}
+  .inv-sign{text-align:left;}
+}
+.more-options summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--blue);margin:10px 0;list-style:none;}
+.more-options summary::-webkit-details-marker{display:none;}
+.more-options summary::before{content:'+ ';}
+.more-options[open] summary::before{content:'- ';}
+.age-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10.5px;font-weight:700;background:#eef0f4;color:#555;}
+.age-badge.b0{background:var(--green-bg);color:var(--green);}
+.age-badge.b1{background:var(--amber-bg);color:var(--amber);}
+.age-badge.b2{background:#ffe6d5;color:#a35b1f;}
+.age-badge.b3{background:var(--red-bg);color:var(--red);}
+.settings-shell{display:flex;gap:20px;align-items:flex-start;}
+.settings-nav{width:200px;flex:0 0 200px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:8px;}
+.settings-nav .s-item{padding:9px 12px;border-radius:7px;font-size:13px;font-weight:600;color:var(--text-dim);cursor:pointer;margin-bottom:2px;}
+.settings-nav .s-item:hover{background:#f4f6fa;}
+.settings-nav .s-item.active{background:var(--navy);color:#fff;}
+.settings-body{flex:1;min-width:0;}
+.ledger-tbl td.dr{color:var(--red);}
+.ledger-tbl td.cr{color:var(--green);}
+.ac-item.gr-head{background:#f8f9fc;font-weight:700;font-size:10.5px;text-transform:uppercase;color:var(--text-dim);cursor:default;letter-spacing:.3px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);}
+.card h3{font-size:14px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-dim);margin-bottom:14px;}
+.stat-card{padding:16px 18px;}
+.stat-card .num{font-size:24px;font-weight:700;color:var(--navy);}
+.stat-card .lbl{font-size:12px;color:var(--text-dim);margin-top:2px;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--text);}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--gold-2);outline-offset:0;border-color:var(--gold);}
+.field textarea{resize:vertical;min-height:60px;}
+.hint{font-size:11px;color:var(--text-dim);margin-top:3px;}
+.row{display:flex;gap:10px;align-items:center;}
+.between{justify-content:space-between;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--text-dim);background:#f8f9fc;font-weight:700;}
+tr:hover td{background:#fafbfd;}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:#fff;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-draft{background:#eef0f4;color:#555;}
+.badge-issued{background:var(--blue-bg);color:var(--blue);}
+.badge-partly{background:var(--amber-bg);color:var(--amber);}
+.badge-paid{background:var(--green-bg);color:var(--green);}
+.badge-cancelled{background:var(--red-bg);color:var(--red);}
+.actions-cell{white-space:nowrap;}
+.icon-link{cursor:pointer;color:var(--blue);font-size:12px;font-weight:600;margin-right:10px;}
+.icon-link.danger{color:var(--red);}
+.empty-state{text-align:center;padding:50px 20px;color:var(--text-dim);}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px;}
+.toolbar input,.toolbar select{padding:7px 10px;border:1px solid var(--border);border-radius:7px;}
+.pill-tabs{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-dim);}
+.pill.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+#modalRoot{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:center;background:rgba(15,20,35,.45);z-index:200;overflow-y:auto;padding:40px 16px;}
+#modalRoot.open{display:flex;}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:640px;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal.wide{max-width:900px;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.modal-close{cursor:pointer;font-size:20px;color:var(--text-dim);background:none;border:none;}
+#toastRoot{position:fixed;bottom:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--navy);color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:var(--shadow);animation:slidein .15s ease-out;}
+.toast.err{background:var(--red);}
+.toast.ok{background:var(--green);}
+@keyframes slidein{from{transform:translateY(8px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.autocomplete-wrap{position:relative;}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow);max-height:220px;overflow-y:auto;z-index:50;margin-top:3px;display:none;}
+.ac-list.open{display:block;}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f1f5;}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover,.ac-item.hl{background:var(--blue-bg);}
+.ac-item .sub{font-size:11px;color:var(--text-dim);}
+.line-tbl input,.line-tbl select{padding:6px 7px;font-size:12.5px;}
+.line-tbl td{vertical-align:top;padding:6px;}
+.num-right{text-align:right;}
+.totals-box{margin-left:auto;max-width:340px;}
+.totals-box .r{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px dashed var(--border);}
+.totals-box .r.grand{font-size:16px;font-weight:700;color:var(--navy);border-bottom:none;border-top:2px solid var(--navy);padding-top:10px;margin-top:4px;}
+.section-title{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.3px;margin:22px 0 10px;}
+.section-title:first-child{margin-top:0;}
+.chk-row{display:flex;align-items:center;gap:8px;font-size:13px;}
+.chk-row input{width:auto;}
+.logo-preview{width:72px;height:72px;object-fit:contain;border:1px solid var(--border);border-radius:8px;background:#fafbfd;}
+.link-btn{background:none;border:none;color:var(--blue);cursor:pointer;font-weight:600;font-size:12.5px;padding:0;}
+
+/* ---- Invoice print/preview template ---- */
+.inv-doc{background:#fff;padding:26px 30px;width:100%;max-width:800px;margin:0 auto;color:#111;}
+.inv-doc *{box-sizing:border-box;}
+.inv-head{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid #14213d;padding-bottom:14px;margin-bottom:14px;}
+.inv-head .firm-block{display:flex;gap:12px;}
+.inv-head img.logo{width:58px;height:58px;object-fit:contain;}
+.inv-head .fn{font-size:19px;font-weight:800;color:#14213d;}
+.inv-head .fmeta{font-size:11.5px;color:#444;line-height:1.5;margin-top:2px;max-width:340px;}
+.inv-title-block{text-align:right;}
+.inv-title-block .tt{font-size:20px;font-weight:800;letter-spacing:1px;color:#14213d;}
+.inv-title-block .meta{font-size:12px;margin-top:6px;line-height:1.7;}
+.inv-title-block .meta b{color:#111;}
+.inv-parties{display:flex;justify-content:space-between;gap:16px;margin-bottom:16px;}
+.inv-parties .blk{flex:1;font-size:12px;line-height:1.6;border:1px solid #e2e6ee;border-radius:8px;padding:10px 12px;}
+.inv-parties .blk h4{font-size:11px;text-transform:uppercase;color:#888;margin-bottom:5px;letter-spacing:.4px;}
+.inv-parties .blk .nm{font-weight:700;font-size:13.5px;color:#111;}
+.inv-doc table.items{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:12px;}
+.inv-doc table.items th{background:#14213d;color:#fff;padding:7px 8px;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;}
+.inv-doc table.items td{padding:7px 8px;border-bottom:1px solid #e2e6ee;}
+.inv-doc table.items td.num,.inv-doc table.items th.num{text-align:right;}
+.inv-foot-grid{display:flex;justify-content:space-between;gap:20px;margin-top:6px;}
+.inv-words{font-size:11.5px;flex:1;}
+.inv-words b{display:block;font-size:11px;color:#888;text-transform:uppercase;margin-bottom:3px;}
+.inv-totals{width:280px;font-size:12.5px;}
+.inv-totals .r{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #ddd;}
+.inv-totals .r.grand{font-weight:800;font-size:14.5px;border-top:2px solid #14213d;border-bottom:none;padding-top:7px;margin-top:3px;}
+.inv-bottom{display:flex;justify-content:space-between;gap:20px;margin-top:22px;padding-top:14px;border-top:1px solid #e2e6ee;font-size:11.5px;}
+.inv-bottom .bank b{display:block;font-size:11px;color:#888;text-transform:uppercase;margin-bottom:4px;}
+.inv-sign{text-align:right;}
+.inv-sign .for-firm{font-weight:700;font-size:12.5px;color:#111;margin-bottom:2px;}
+.inv-sign .sig-block{display:inline-block;width:190px;text-align:center;vertical-align:top;}
+.inv-sign .sig-space{height:72px;}
+.inv-sign .sig-img{max-height:72px;max-width:100%;object-fit:contain;margin-bottom:4px;}
+.inv-sign .sig-line{font-weight:700;font-size:12px;margin-top:2px;}
+.inv-sign .sig-role{font-size:10.5px;color:#555;font-weight:400;margin-top:1px;}
+.inv-terms{margin-top:14px;font-size:10.5px;color:#555;line-height:1.5;white-space:pre-line;}
+.print-only{display:none;}
+#printArea{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #printArea, #printArea *{visibility:visible;}
+  #printArea{position:absolute;top:0;left:0;width:100%;display:block !important;}
+  @page{size:A4;margin:12mm;}
+}
+</style>
+</head>
+<body>
+<div id="shell">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="logo-txt">InvoicePro</div>
+      <div class="logo-sub">Offline CA Invoicing Suite</div>
+    </div>
+    <div class="nav-group" id="navGroup">
+      <div class="nav-item" data-route="dashboard"><span class="nav-icon">&#9632;</span>Dashboard</div>
+      <div class="nav-item" data-route="invoice/new"><span class="nav-icon">&#10133;</span>New Invoice</div>
+      <div class="nav-item" data-route="invoices"><span class="nav-icon">&#128196;</span>Invoices</div>
+      <div class="nav-item" data-route="collections"><span class="nav-icon">&#128176;</span>Collections</div>
+      <div class="nav-item" data-route="clients"><span class="nav-icon">&#128100;</span>Clients</div>
+      <div class="nav-item" data-route="reports"><span class="nav-icon">&#128202;</span>Reports</div>
+      <div class="nav-item" data-route="settings"><span class="nav-icon">&#9881;</span>Settings</div>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-foot">100% offline &middot; data stays on this PC</div>
+  </aside>
+  <div id="navOverlay"></div>
+  <div id="mainCol">
+    <header id="topbar">
+      <div class="topbar-title"><button type="button" class="menu-btn" id="menuBtn" aria-label="Menu">&#9776;</button><div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="pageSub">Overview of your practice billing</div></div></div>
+      <div class="row topbar-actions" style="gap:14px;align-items:center;">
+        <div class="autocomplete-wrap" id="globalSearchWrap" style="width:260px;">
+         <input type="text" id="globalSearchInp" placeholder="Search clients, invoices, GSTIN... ( / )">
+         <div class="ac-list" id="globalSearchList"></div>
+        </div>
+        <span class="topbar-credit">Crafted by CA Sriram &middot; reachcasriram@gmail.com</span>
+        <button class="btn btn-gold" id="quickNewInvBtn" title="New Invoice (Alt+N)">+<span class="lbl-long"> New Invoice</span></button>
+      </div>
+    </header>
+    <div id="scrollArea">
+    <main id="app"></main>
+    <footer class="app-footer">
+      <div>Crafted by <b>CA Sriram</b> (A SRI RAM &amp; ASSOCIATES)</div>
+      <div>reachcasriram@gmail.com</div>
+      <div class="app-footer-copy">&copy; 2026 A SRI RAM &amp; ASSOCIATES. All rights reserved.</div>
+    </footer>
+    </div>
+  </div>
+</div>
+<div id="modalRoot"><div class="modal" id="modalBody"></div></div>
+<div id="toastRoot"></div>
+<div id="printArea"></div>
+<script>
+'use strict';
+/* ============ CONSTANTS ============ */
+const STATE_LIST = [
+ ['01','Jammu and Kashmir'],['02','Himachal Pradesh'],['03','Punjab'],['04','Chandigarh'],
+ ['05','Uttarakhand'],['06','Haryana'],['07','Delhi'],['08','Rajasthan'],['09','Uttar Pradesh'],
+ ['10','Bihar'],['11','Sikkim'],['12','Arunachal Pradesh'],['13','Nagaland'],['14','Manipur'],
+ ['15','Mizoram'],['16','Tripura'],['17','Meghalaya'],['18','Assam'],['19','West Bengal'],
+ ['20','Jharkhand'],['21','Odisha'],['22','Chhattisgarh'],['23','Madhya Pradesh'],['24','Gujarat'],
+ ['26','Dadra and Nagar Haveli and Daman and Diu'],['27','Maharashtra'],['29','Karnataka'],
+ ['30','Goa'],['31','Lakshadweep'],['32','Kerala'],['33','Tamil Nadu'],['34','Puducherry'],
+ ['35','Andaman and Nicobar Islands'],['36','Telangana'],['37','Andhra Pradesh'],['38','Ladakh'],
+ ['97','Other Territory'],['99','Centre Jurisdiction']
+];
+const PAYMENT_MODES = ['Cash','Bank Transfer','UPI','Cheque','Credit','Other'];
+const INVOICE_STATUSES = ['Draft','Issued','Partly Paid','Paid','Cancelled'];
+const GST_RATES = [0,5,12,18,28];
+const DEFAULT_SERVICES = [
+ {name:'Income Tax Return Filing',sac:'998231',rate:18,gstTreatment:'taxable',description:'Preparation and filing of Income Tax Return'},
+ {name:'GST Return Filing',sac:'998222',rate:18,gstTreatment:'taxable',description:'Preparation and filing of periodic GST returns'},
+ {name:'Tax Audit',sac:'998221',rate:18,gstTreatment:'taxable',description:'Tax audit under the Income Tax Act'},
+ {name:'Statutory / Internal Audit',sac:'998221',rate:18,gstTreatment:'taxable',description:'Statutory / internal audit services'},
+ {name:'GST / Income-tax Notice Assistance',sac:'998231',rate:18,gstTreatment:'taxable',description:'Assistance in replying to GST / Income-tax notices'},
+ {name:'Accounting & Bookkeeping',sac:'998222',rate:18,gstTreatment:'taxable',description:'Periodic accounting and bookkeeping services'},
+ {name:'Certification',sac:'998219',rate:18,gstTreatment:'taxable',description:'Issuance of professional certificate(s)'},
+ {name:'ROC / MCA Compliance',sac:'998211',rate:18,gstTreatment:'taxable',description:'ROC / MCA filings and compliance'},
+ {name:'Tax Consultancy',sac:'998231',rate:18,gstTreatment:'taxable',description:'General tax consultancy services'},
+ {name:'Other Professional Services',sac:'998399',rate:18,gstTreatment:'taxable',description:'Other professional services'}
+];
+
+/* ============ UTILITIES ============ */
+function uid(){return 'id_'+Date.now().toString(36)+Math.random().toString(36).slice(2,9);}
+function round2(n){return Math.round((n+Number.EPSILON)*100)/100;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtMoney(n){n=Number(n)||0;return '₹ '+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+// Dates are kept as local YYYY-MM-DD strings; toISOString() is UTC and gives yesterday's date before 5:30 AM IST.
+function localISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parseISO(s){if(/^\d{4}-\d{2}-\d{2}$/.test(String(s||''))){const p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2]);}return new Date(s);}
+function fmtDate(d){if(!d)return '';const dt=parseISO(d);if(isNaN(dt))return d;return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function todayISO(){return localISO(new Date());}
+function daysAgoISO(n){const d=new Date();d.setDate(d.getDate()-(Number(n)||0));return localISO(d);}
+function getFY(dateStr){const d=parseISO(dateStr);const y=d.getFullYear();const m=d.getMonth();if(m>=3)return y+'-'+String((y+1)%100).padStart(2,'0');return (y-1)+'-'+String(y%100).padStart(2,'0');}
+function debounce(fn,ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms);};}
+function addDaysISO(dateStr,n){const d=parseISO(dateStr);d.setDate(d.getDate()+(Number(n)||0));return localISO(d);}
+function ageInDays(dateStr){if(!dateStr)return 0;const ms=parseISO(todayISO()).getTime()-parseISO(dateStr).getTime();return Math.max(0,Math.round(ms/86400000));}
+// Older/edited invoices may carry amountReceived without matching payment entries; the gap is treated as received on the invoice date.
+function paymentsOf(inv){
+ const list=(inv.payments||[]).filter(p=>Number(p.amount));
+ const sum=round2(list.reduce((s,p)=>s+Number(p.amount),0));
+ const gap=round2((inv.amountReceived||0)-sum);
+ if(gap>0.004)list.push({date:inv.invoiceDate,amount:gap,mode:inv.paymentMode||'Other',reference:''});
+ return list;
+}
+function ageingBucket(days){if(days<=30)return '0-30 Days';if(days<=60)return '31-60 Days';if(days<=90)return '61-90 Days';return 'Above 90 Days';}
+function invoiceBalance(inv){return round2((inv.grandTotal||0)-(inv.amountReceived||0));}
+// Drafts are not yet billed: no invoice number, and excluded from billing, collections and outstanding.
+function isBilled(inv){return inv.status!=='Cancelled' && inv.status!=='Draft';}
+function invNoLabel(inv){return inv.invoiceNo||'DRAFT';}
+function isOutstanding(inv){return isBilled(inv) && invoiceBalance(inv)>0.004;}
+function derivePaidStatus(inv){const bal=invoiceBalance(inv);return bal<=0.004?'Paid':((inv.amountReceived||0)>0?'Partly Paid':'Issued');}
+function isOverdue(inv){return isOutstanding(inv) && !!inv.dueDate && inv.dueDate<todayISO();}
+
+/* ---- format validators ---- */
+function isValidPAN(v){return /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(String(v||'').trim().toUpperCase());}
+function isValidGSTIN(v){return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(String(v||'').trim().toUpperCase());}
+function isValidPhone(v){
+ let s=String(v||'').trim().replace(/[\s-]/g,'');
+ s=s.replace(/^\+?91(?=\d{10}$)/,'');
+ return /^[6-9]\d{9}$/.test(s);
+}
+function autoUppercase(el){
+ if(!el)return;
+ el.addEventListener('input',()=>{
+  const s=el.selectionStart, en=el.selectionEnd;
+  el.value=el.value.toUpperCase();
+  try{el.setSelectionRange(s,en);}catch(_){}
+ });
+}
+
+const ONES=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+const TENS=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+function twoDigitsWords(n){if(n<20)return ONES[n];return TENS[Math.floor(n/10)]+(n%10?' '+ONES[n%10]:'');}
+function threeDigitsWords(n){let s='';if(n>=100){s+=ONES[Math.floor(n/100)]+' Hundred';n%=100;if(n)s+=' ';}if(n)s+=twoDigitsWords(n);return s;}
+function numberToWordsIndian(num){num=Math.floor(num);if(num===0)return 'Zero';let parts=[];
+ const crore=Math.floor(num/10000000);num%=10000000;
+ const lakh=Math.floor(num/100000);num%=100000;
+ const thousand=Math.floor(num/1000);num%=1000;
+ const hundred=num;
+ if(crore)parts.push(threeDigitsWords(crore)+' Crore');
+ if(lakh)parts.push(threeDigitsWords(lakh)+' Lakh');
+ if(thousand)parts.push(threeDigitsWords(thousand)+' Thousand');
+ if(hundred)parts.push(threeDigitsWords(hundred));
+ return parts.join(' ');
+}
+function amountInWords(amount){
+ amount=Math.max(0,Number(amount)||0);
+ const rupees=Math.floor(amount);
+ const paise=Math.round((amount-rupees)*100);
+ let words='Rupees '+numberToWordsIndian(rupees);
+ if(paise>0)words+=' and '+numberToWordsIndian(paise)+' Paise';
+ return words+' Only';
+}
+
+/* ============ INDEXEDDB LAYER ============ */
+const DB_NAME='ca_invoice_pro_db', DB_VERSION=2;
+let dbInstance=null;
+function openDB(){
+ return new Promise((resolve,reject)=>{
+  const req=indexedDB.open(DB_NAME,DB_VERSION);
+  req.onupgradeneeded=(e)=>{
+   const db=e.target.result;
+   if(!db.objectStoreNames.contains('firm'))db.createObjectStore('firm',{keyPath:'id'});
+   if(!db.objectStoreNames.contains('clients'))db.createObjectStore('clients',{keyPath:'id'});
+   if(!db.objectStoreNames.contains('services'))db.createObjectStore('services',{keyPath:'id'});
+   if(!db.objectStoreNames.contains('invoices'))db.createObjectStore('invoices',{keyPath:'id'});
+   if(!db.objectStoreNames.contains('meta'))db.createObjectStore('meta',{keyPath:'key'});
+   if(!db.objectStoreNames.contains('engagements'))db.createObjectStore('engagements',{keyPath:'id'});
+  };
+  req.onsuccess=()=>{dbInstance=req.result;resolve(dbInstance);};
+  req.onerror=()=>reject(req.error);
+ });
+}
+function dbGetAll(store){return new Promise((res,rej)=>{const r=dbInstance.transaction(store,'readonly').objectStore(store).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+function dbPut(store,val){return new Promise((res,rej)=>{const r=dbInstance.transaction(store,'readwrite').objectStore(store).put(val);r.onsuccess=()=>res(val);r.onerror=()=>rej(r.error);});}
+function dbDelete(store,key){return new Promise((res,rej)=>{const r=dbInstance.transaction(store,'readwrite').objectStore(store).delete(key);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});}
+function dbClear(store){return new Promise((res,rej)=>{const r=dbInstance.transaction(store,'readwrite').objectStore(store).clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});}
+
+/* ============ APP STATE ============ */
+const state={firm:null,clients:[],services:[],invoices:[],engagements:[]};
+
+const DEFAULT_WA_TEMPLATE='Dear {CLIENT},\n\nThis is a gentle reminder that invoice {INVOICE_NO} dated {DATE} for {AMOUNT} raised by {FIRM} is still outstanding.\n\nKindly arrange payment at your earliest convenience.\n\nRegards,\n{FIRM}';
+const DEFAULT_EMAIL_SUBJECT='Payment Reminder — Invoice {INVOICE_NO}';
+const DEFAULT_EMAIL_BODY='Dear {CLIENT},\n\nThis is a gentle reminder that invoice {INVOICE_NO} dated {DATE} for {AMOUNT} raised by {FIRM} is still outstanding.\n\n{BANK}\n\nKindly arrange payment at your earliest convenience and share the payment details for our records.\n\nRegards,\n{FIRM}';
+
+function defaultFirm(){
+ return {id:'main',name:'',constitution:'Proprietorship',address:'',stateCode:'27',stateName:'Maharashtra',
+  pan:'',gstin:'',gstApplicable:false,phone:'',email:'',bankName:'',accountNumber:'',ifsc:'',branch:'',upi:'',
+  logoDataUrl:'',logoWidth:0,logoHeight:0,
+  signatureDataUrl:'',signatureWidth:0,signatureHeight:0,
+  signatoryName:'',signatoryDesignation:'Authorised Signatory',
+  invoicePrefix:'INV',invoiceNumberFormat:'{PREFIX}/{FY}/{SEQ}',nextSeqByFY:{},
+  terms:'1. Payment due within 15 days of invoice date.\n2. Cheques to be issued in the name of the firm.\n3. Subject to jurisdiction of local courts.',
+  defaultGstRate:18,
+  defaultDueDays:0,
+  waReminderTemplate:DEFAULT_WA_TEMPLATE,
+  emailReminderSubject:DEFAULT_EMAIL_SUBJECT,
+  emailReminderBody:DEFAULT_EMAIL_BODY};
+}
+function loadImageFromSrc(src){
+ return new Promise((resolve,reject)=>{
+  const img=new Image();
+  img.onload=()=>resolve(img);
+  img.onerror=()=>reject(new Error('Could not load image'));
+  img.src=src;
+ });
+}
+async function normalizeImageToJpeg(src,maxW,maxH,quality){
+ const img=await loadImageFromSrc(src);
+ let w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+ const scale=Math.min(1,maxW/w,maxH/h);
+ w=Math.max(1,Math.round(w*scale)); h=Math.max(1,Math.round(h*scale));
+ const canvas=document.createElement('canvas');
+ canvas.width=w; canvas.height=h;
+ const ctx=canvas.getContext('2d');
+ ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h);
+ ctx.drawImage(img,0,0,w,h);
+ return {dataUrl:canvas.toDataURL('image/jpeg',quality||0.92),width:w,height:h};
+}
+
+async function loadState(){
+ await openDB();
+ let firm=(await dbGetAll('firm'))[0];
+ if(!firm){firm=defaultFirm();await dbPut('firm',firm);}
+ if(!firm.nextSeqByFY)firm.nextSeqByFY={};
+ if(firm.defaultDueDays==null)firm.defaultDueDays=0;
+ if(!firm.waReminderTemplate)firm.waReminderTemplate=DEFAULT_WA_TEMPLATE;
+ if(!firm.emailReminderSubject)firm.emailReminderSubject=DEFAULT_EMAIL_SUBJECT;
+ if(!firm.emailReminderBody)firm.emailReminderBody=DEFAULT_EMAIL_BODY;
+ state.firm=firm;
+ state.clients=await dbGetAll('clients');
+ state.services=await dbGetAll('services');
+ if(state.services.length===0){
+  for(const s of DEFAULT_SERVICES){
+   const svc={id:uid(),name:s.name,description:s.description,sac:s.sac,rate:0,gstTreatment:s.gstTreatment,defaultGstRate:s.rate,createdAt:Date.now()};
+   await dbPut('services',svc);
+   state.services.push(svc);
+  }
+ }
+ state.invoices=await dbGetAll('invoices');
+ state.engagements=await dbGetAll('engagements');
+ const metaRows=await dbGetAll('meta');
+ state.meta={}; metaRows.forEach(m=>{state.meta[m.key]=m.value;});
+}
+async function setMeta(key,value){
+ state.meta=state.meta||{};
+ state.meta[key]=value;
+ await dbPut('meta',{key,value});
+}
+
+/* ============ TOAST / MODAL ============ */
+function toast(msg,type){
+ const root=document.getElementById('toastRoot');
+ const el=document.createElement('div');
+ el.className='toast'+(type?' '+type:'');
+ el.textContent=msg;
+ root.appendChild(el);
+ setTimeout(()=>{el.remove();},3200);
+}
+function openModal(html,wide){
+ const root=document.getElementById('modalRoot');
+ const body=document.getElementById('modalBody');
+ if(pendingConfirm){const r=pendingConfirm;pendingConfirm=null;r(false);}
+ body.className='modal'+(wide?' wide':'');
+ body.innerHTML=html;
+ root.classList.add('open');
+}
+let pendingConfirm=null;
+function closeModal(){
+ document.getElementById('modalRoot').classList.remove('open');document.getElementById('modalBody').innerHTML='';
+ if(pendingConfirm){const r=pendingConfirm;pendingConfirm=null;r(false);}
+}
+document.getElementById('modalRoot').addEventListener('click',(e)=>{if(e.target.id==='modalRoot')closeModal();});
+document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeModal();});
+function confirmDialog(title,msg,okLabel,onOk){
+ openModal(
+  '<div class="modal-head"><h3>'+esc(title)+'</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>'+
+  '<p style="color:var(--text-dim);font-size:13.5px;">'+esc(msg)+'</p>'+
+  '<div class="row" style="justify-content:flex-end;margin-top:16px;">'+
+   '<button class="btn" onclick="closeModal()">Cancel</button>'+
+   '<button class="btn btn-danger" id="confirmOkBtn">'+esc(okLabel||'Confirm')+'</button>'+
+  '</div>'
+ );
+ document.getElementById('confirmOkBtn').onclick=()=>{onOk();closeModal();};
+}
+function confirmAsync(title,msg,okLabel){
+ return new Promise(resolve=>{
+  openModal(
+   '<div class="modal-head"><h3>'+esc(title)+'</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>'+
+   '<p style="color:var(--text-dim);font-size:13.5px;">'+esc(msg)+'</p>'+
+   '<div class="row" style="justify-content:flex-end;margin-top:16px;">'+
+    '<button class="btn" id="confirmAsyncCancel">Cancel</button>'+
+    '<button class="btn btn-gold" id="confirmAsyncOk">'+esc(okLabel||'Continue')+'</button>'+
+   '</div>'
+  );
+  pendingConfirm=resolve;
+  document.getElementById('confirmAsyncCancel').onclick=()=>closeModal();
+  document.getElementById('confirmAsyncOk').onclick=()=>{pendingConfirm=null;closeModal();resolve(true);};
+ });
+}
+
+/* ============ GST / CALC ENGINE ============ */
+function calcLine(line, gstApplicable, interState){
+ const rate=Number(line.rate)||0;
+ const base=round2(Math.max(0,rate));
+ const discPct = line.discountType==='percent';
+ const discountAmt = discPct ? round2(base*Math.max(0,Number(line.discount)||0)/100) : round2(Math.max(0,Number(line.discount)||0));
+ const taxable=round2(Math.max(0,base-discountAmt));
+ let cgst=0,sgst=0,igst=0;
+ const gstRate=Number(line.gstRate)||0;
+ if(gstApplicable && gstRate>0){
+  if(interState){igst=round2(taxable*gstRate/100);}
+  else{cgst=round2(taxable*gstRate/200);sgst=round2(taxable*gstRate/200);}
+ }
+ const lineTotal=round2(taxable+cgst+sgst+igst);
+ return Object.assign({},line,{base,discountAmt,taxable,cgst,sgst,igst,lineTotal});
+}
+function calcInvoiceTotals(lines, gstApplicable, interState){
+ const computed=lines.map(l=>calcLine(l,gstApplicable,interState));
+ let subTotal=0,discountTotal=0,taxableTotal=0,cgstTotal=0,sgstTotal=0,igstTotal=0;
+ computed.forEach(l=>{subTotal+=l.base;discountTotal+=l.discountAmt;taxableTotal+=l.taxable;cgstTotal+=l.cgst;sgstTotal+=l.sgst;igstTotal+=l.igst;});
+ subTotal=round2(subTotal);discountTotal=round2(discountTotal);taxableTotal=round2(taxableTotal);
+ cgstTotal=round2(cgstTotal);sgstTotal=round2(sgstTotal);igstTotal=round2(igstTotal);
+ const rawGrand=round2(taxableTotal+cgstTotal+sgstTotal+igstTotal);
+ const grandTotal=Math.round(rawGrand);
+ const roundOff=round2(grandTotal-rawGrand);
+ return {lines:computed,subTotal,discountTotal,taxableTotal,cgstTotal,sgstTotal,igstTotal,rawGrand,roundOff,grandTotal};
+}
+function nextInvoiceNumberPreview(fy){
+ const firm=state.firm;
+ const seq=(firm.nextSeqByFY&&firm.nextSeqByFY[fy])||1;
+ const num=String(seq).padStart(4,'0');
+ const format=firm.invoiceNumberFormat||'{PREFIX}/{FY}/{SEQ}';
+ const invoiceNo=format.replace('{PREFIX}',firm.invoicePrefix||'INV').replace('{FY}',fy).replace('{SEQ}',num);
+ return {invoiceNo,seq};
+}
+async function commitInvoiceNumber(fy,seq){
+ if(!state.firm.nextSeqByFY)state.firm.nextSeqByFY={};
+ state.firm.nextSeqByFY[fy]=seq+1;
+ await dbPut('firm',state.firm);
+}
+
+/* ============ ROUTER ============ */
+const PAGE_META={
+ 'dashboard':{title:'Dashboard',sub:'Overview of your practice billing'},
+ 'invoice/new':{title:'New Invoice',sub:'Client → Service → Amount → Generate'},
+ 'invoices':{title:'Invoices',sub:'Invoice register'},
+ 'collections':{title:'Collections',sub:'Follow up on outstanding professional fees'},
+ 'clients':{title:'Clients',sub:'Client master'},
+ 'reports':{title:'Reports',sub:'Billing, collection and outstanding reports'},
+ 'settings':{title:'Settings',sub:'Firm, invoicing, services and data'}
+};
+function currentRoute(){
+ let h=location.hash.replace('#/','')||'dashboard';
+ return h;
+}
+function navigate(route){location.hash='#/'+route;}
+function renderRoute(){
+ const full=currentRoute();
+ const base=full.split('/').slice(0,2).join('/');
+ const parts=full.split('/');
+ document.querySelectorAll('.nav-item').forEach(n=>{
+  n.classList.toggle('active', full===n.dataset.route || (n.dataset.route==='invoices'&&parts[0]==='invoices') || (n.dataset.route==='clients'&&parts[0]==='client') || (n.dataset.route==='settings'&&parts[0]==='settings') || (n.dataset.route==='invoice/new'&&parts[0]==='invoice'&&(parts[1]==='new'||parts[1]==='edit')) );
+ });
+ let meta=PAGE_META[base]||PAGE_META[parts[0]]||{title:'InvoicePro',sub:''};
+ if(parts[0]==='invoice'&&parts[1]==='view'){meta={title:'Invoice',sub:'View / print invoice'};}
+ if(parts[0]==='invoice'&&parts[1]==='edit'){meta={title:'Edit Invoice',sub:'Update invoice details'};}
+ if(parts[0]==='client'&&parts[1]==='ledger'){meta={title:'Client Ledger',sub:'Billing history and outstanding'};}
+ document.getElementById('pageTitle').textContent=meta.title;
+ document.getElementById('pageSub').textContent=meta.sub;
+ const app=document.getElementById('app');
+ if(parts[0]==='dashboard')return renderDashboard(app);
+ if(parts[0]==='invoice'&&parts[1]==='new')return renderInvoiceForm(app,null);
+ if(parts[0]==='invoice'&&parts[1]==='edit')return renderInvoiceForm(app,parts[2]);
+ if(parts[0]==='invoice'&&parts[1]==='view')return renderInvoiceView(app,parts[2]);
+ if(parts[0]==='invoices')return renderInvoiceRegister(app);
+ if(parts[0]==='collections')return renderCollections(app);
+ if(parts[0]==='clients')return renderClients(app);
+ if(parts[0]==='client'&&parts[1]==='ledger')return renderClientLedger(app,parts[2]);
+ if(parts[0]==='reports')return renderReports(app);
+ if(parts[0]==='settings')return renderSettings(app,parts[1]);
+ return renderDashboard(app);
+}
+window.addEventListener('hashchange',()=>{document.getElementById('scrollArea').scrollTop=0;renderRoute();});
+document.getElementById('navGroup').addEventListener('click',(e)=>{
+ const item=e.target.closest('.nav-item');
+ if(item){navigate(item.dataset.route);document.body.classList.remove('nav-open');}
+});
+document.getElementById('menuBtn').addEventListener('click',()=>document.body.classList.toggle('nav-open'));
+document.getElementById('navOverlay').addEventListener('click',()=>document.body.classList.remove('nav-open'));
+document.getElementById('quickNewInvBtn').addEventListener('click',()=>{
+ if(currentRoute()==='invoice/new'){duplicateSource=null;renderRoute();}
+ else navigate('invoice/new');
+});
+
+/* ============ GLOBAL SEARCH ============ */
+function buildGlobalSearchResults(q){
+ q=(q||'').trim().toLowerCase();
+ if(!q)return {clients:[],invoices:[]};
+ const clients=state.clients.filter(c=>[c.name,c.gstin,c.pan,c.mobile,c.email].some(v=>v&&String(v).toLowerCase().includes(q))).slice(0,6);
+ const invoices=state.invoices.filter(i=>[i.invoiceNo,clientName(i),(i.clientSnapshot||{}).gstin,String(i.grandTotal||'')].some(v=>v&&String(v).toLowerCase().includes(q))).slice(0,6);
+ return {clients,invoices};
+}
+(function initGlobalSearch(){
+ const inp=document.getElementById('globalSearchInp');
+ const list=document.getElementById('globalSearchList');
+ function draw(q){
+  const {clients,invoices}=buildGlobalSearchResults(q);
+  if(!clients.length && !invoices.length){list.classList.remove('open');list.innerHTML='';return;}
+  let html='';
+  if(clients.length){
+   html+='<div class="ac-item gr-head">Clients</div>'+clients.map(c=>'<div class="ac-item" data-type="client" data-id="'+c.id+'"><b>'+esc(c.name)+'</b><div class="sub">'+esc(c.gstin||c.mobile||'')+'</div></div>').join('');
+  }
+  if(invoices.length){
+   html+='<div class="ac-item gr-head">Invoices</div>'+invoices.map(i=>'<div class="ac-item" data-type="invoice" data-id="'+i.id+'"><b>'+esc(invNoLabel(i))+'</b><div class="sub">'+esc(clientName(i))+' &middot; '+fmtMoney(i.grandTotal)+'</div></div>').join('');
+  }
+  list.innerHTML=html;
+  list.classList.add('open');
+ }
+ inp.addEventListener('input',()=>draw(inp.value));
+ inp.addEventListener('focus',()=>{if(inp.value)draw(inp.value);});
+ inp.addEventListener('blur',()=>setTimeout(()=>list.classList.remove('open'),150));
+ list.addEventListener('mousedown',(e)=>{
+  const item=e.target.closest('.ac-item[data-id]');
+  if(!item)return;
+  if(item.dataset.type==='client')navigate('client/ledger/'+item.dataset.id);
+  else navigate('invoice/view/'+item.dataset.id);
+  inp.value=''; list.classList.remove('open');
+ });
+})();
+document.addEventListener('keydown',(e)=>{
+ const tag=(document.activeElement&&document.activeElement.tagName||'').toLowerCase();
+ const typing = tag==='input'||tag==='textarea'||tag==='select'||(document.activeElement&&document.activeElement.isContentEditable);
+ if(e.key==='/' && !typing){e.preventDefault();document.getElementById('globalSearchInp').focus();}
+ if((e.ctrlKey||e.metaKey||e.altKey) && (e.key||'').toLowerCase()==='n' && !typing){e.preventDefault();navigate('invoice/new');}
+ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){
+  const saveBtn=document.getElementById('saveDraftBtn');
+  if(saveBtn){e.preventDefault();saveBtn.click();}
+ }
+});
+
+/* ============ DASHBOARD ============ */
+function renderDashboard(app){
+ const now=new Date();
+ const thisFY=getFY(todayISO());
+ const active=state.invoices.filter(isBilled);
+ const thisYM=todayISO().slice(0,7);
+ const invThisMonth=active.filter(i=>(i.invoiceDate||'').slice(0,7)===thisYM);
+ const invThisFY=active.filter(i=>i.fy===thisFY);
+ const billedFY=invThisFY.reduce((s,i)=>s+(i.grandTotal||0),0);
+ const billedMonth=invThisMonth.reduce((s,i)=>s+(i.grandTotal||0),0);
+ const allPayments=[]; active.forEach(i=>paymentsOf(i).forEach(p=>allPayments.push(p)));
+ const collectedFY=allPayments.filter(p=>p.date&&getFY(p.date)===thisFY).reduce((s,p)=>s+Number(p.amount),0);
+ const collectedMonth=allPayments.filter(p=>(p.date||'').slice(0,7)===thisYM).reduce((s,p)=>s+Number(p.amount),0);
+ const outstandingAllList=active.filter(isOutstanding);
+ const outstandingAll=outstandingAllList.reduce((s,i)=>s+invoiceBalance(i),0);
+ const overdueList=outstandingAllList.filter(isOverdue);
+ const overdueAmt=overdueList.reduce((s,i)=>s+invoiceBalance(i),0);
+ const usesDueDates=state.invoices.some(i=>!!i.dueDate);
+ const recent=state.invoices.slice().sort((a,b)=>b.createdAt-a.createdAt).slice(0,6);
+
+ const byClient={};
+ outstandingAllList.forEach(i=>{
+  const cid=i.clientId||'_unknown';
+  if(!byClient[cid])byClient[cid]={name:clientName(i),amount:0,oldest:i.invoiceDate,id:cid};
+  byClient[cid].amount+=invoiceBalance(i);
+  if(i.invoiceDate<byClient[cid].oldest)byClient[cid].oldest=i.invoiceDate;
+ });
+ const topOutstanding=Object.values(byClient).sort((a,b)=>b.amount-a.amount).slice(0,6);
+
+ const dueSuggestions=computeEngagementSuggestions();
+ const bs=backupStatus();
+ const showBackupBanner=bs.stale && (state.invoices.length>0 || state.clients.length>0);
+
+ app.innerHTML=
+ (showBackupBanner?'<div class="backup-banner"><span>'+(bs.at?'Last backup was '+bs.days+' days ago.':'You have not taken a backup yet.')+' Your data lives only in this browser — clearing browser data will erase it.</span><button type="button" class="btn btn-sm btn-gold" id="dashBackupBtn">Backup Now</button></div>':'')+
+ '<div class="grid g4" style="margin-bottom:16px;">'+
+  statCard('Billing — Current FY',fmtMoney(billedFY),thisFY)+
+  statCard('Billing — Current Month',fmtMoney(billedMonth),now.toLocaleDateString('en-IN',{month:'long'}))+
+  statCard('Collections — Current FY',fmtMoney(collectedFY),thisFY)+
+  statCard('Collections — Current Month',fmtMoney(collectedMonth),now.toLocaleDateString('en-IN',{month:'long'}))+
+ '</div>'+
+ '<div class="grid g2" style="margin-bottom:18px;">'+
+  '<div class="card stat-card" style="cursor:pointer;" onclick="navigate(\'collections\')"><div class="num">'+fmtMoney(outstandingAll)+'</div><div class="lbl">Total Outstanding &middot; '+outstandingAllList.length+' invoice(s)</div></div>'+
+  (usesDueDates?'<div class="card stat-card" style="cursor:pointer;" onclick="navigate(\'collections\')"><div class="num" style="color:var(--red);">'+fmtMoney(overdueAmt)+'</div><div class="lbl">Overdue &middot; '+overdueList.length+' invoice(s)</div></div>':'<div class="card stat-card"><div class="num" style="color:var(--text-dim);font-size:14px;">Not tracked</div><div class="lbl">Overdue (enable due dates on invoices to track this)</div></div>')+
+ '</div>'+
+ (dueSuggestions.length?'<div class="card" style="margin-bottom:18px;"><h3>Invoices to Prepare</h3><div class="hint" style="margin-bottom:10px;">Recurring engagements due for billing. Nothing is issued automatically — review and generate.</div>'+renderEngagementSuggestions(dueSuggestions)+'</div>':'')+
+ '<div class="grid g2">'+
+  '<div class="card"><h3>Recent Invoices</h3>'+renderMiniInvoiceList(recent)+'</div>'+
+  '<div class="card"><h3>Top Outstanding Clients</h3>'+renderTopOutstandingList(topOutstanding)+'</div>'+
+ '</div>';
+
+ const dashBackupBtn=document.getElementById('dashBackupBtn');
+ if(dashBackupBtn)dashBackupBtn.addEventListener('click',async()=>{await downloadBackup();renderRoute();});
+ document.querySelectorAll('.engSuggChk').forEach(c=>c.addEventListener('change',updateBulkGenBtn));
+ function updateBulkGenBtn(){
+  const btn=document.getElementById('genSelectedBtn');
+  if(!btn)return;
+  const n=document.querySelectorAll('.engSuggChk:checked').length;
+  btn.disabled = n===0;
+  btn.textContent = n? 'Generate Selected ('+n+')' : 'Generate Selected';
+ }
+ const selAll=document.getElementById('engSuggSelectAll');
+ if(selAll)selAll.addEventListener('change',(e)=>{document.querySelectorAll('.engSuggChk').forEach(c=>{c.checked=e.target.checked;});updateBulkGenBtn();});
+ document.querySelectorAll('.engSuggGenBtn').forEach(b=>b.addEventListener('click',()=>{
+  const s=dueSuggestions.find(x=>x.key===b.dataset.key);
+  if(s)startInvoiceFromSuggestion(s);
+ }));
+ document.querySelectorAll('.engSuggSkipBtn').forEach(b=>b.addEventListener('click',async()=>{
+  const s=dueSuggestions.find(x=>x.key===b.dataset.key);
+  const eng=s&&state.engagements.find(e=>e.id===s.engagementId);
+  if(!eng)return;
+  const ok=await confirmAsync('Skip Period','Skip '+s.serviceName+' for '+s.clientName+' — '+s.periodLabel+'? It will not be suggested again.','Skip');
+  if(!ok)return;
+  eng.skippedPeriods=(eng.skippedPeriods||[]).concat(s.periodKey);
+  await dbPut('engagements',eng);
+  toast('Period skipped'); renderRoute();
+ }));
+ const genSelBtn=document.getElementById('genSelectedBtn');
+ if(genSelBtn)genSelBtn.addEventListener('click',async()=>{
+  const keys=[...document.querySelectorAll('.engSuggChk:checked')].map(c=>c.dataset.key);
+  const chosen=dueSuggestions.filter(s=>keys.includes(s.key));
+  if(!chosen.length)return;
+  const ok=await confirmAsync('Generate Selected Invoices','This will create '+chosen.length+' invoice(s) as Draft, prefilled from the recurring fee master. You still need to open and confirm each one before it is issued. Continue?','Create Drafts');
+  if(!ok)return;
+  for(const s of chosen)await generateDraftFromSuggestion(s);
+  toast(chosen.length+' draft invoice(s) created','ok');
+  renderRoute();
+ });
+}
+function renderTopOutstandingList(list){
+ if(!list.length)return '<div class="empty-state">Nothing outstanding. Great job!</div>';
+ return '<table><tbody>'+list.map(c=>{
+  const age=ageInDays(c.oldest);
+  return '<tr style="cursor:pointer" onclick="navigate(\'client/ledger/'+c.id+'\')">'+
+   '<td><b>'+esc(c.name)+'</b><br><span style="color:var(--text-dim);font-size:11.5px;">Oldest invoice: '+fmtDate(c.oldest)+'</span></td>'+
+   '<td style="text-align:right;">'+fmtMoney(c.amount)+'<br>'+ageingBadge(age)+'</td>'+
+  '</tr>';
+ }).join('')+'</tbody></table>';
+}
+function ageingBadge(days){
+ const cls = days<=30?'b0':days<=60?'b1':days<=90?'b2':'b3';
+ return '<span class="age-badge '+cls+'">'+days+' days</span>';
+}
+
+/* ============ RECURRING ENGAGEMENT ENGINE ============ */
+function fyQuarterInfo(dateStr){
+ const d=parseISO(dateStr);
+ const fy=getFY(dateStr);
+ const fyMonthIdx=(d.getMonth()+9)%12;
+ return {fy, q:Math.floor(fyMonthIdx/3)+1, h:(fyMonthIdx<6?1:2)};
+}
+function periodKeyForDate(dateStr, frequency){
+ const d=parseISO(dateStr);
+ if(frequency==='monthly'){
+  return {key:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label:d.toLocaleDateString('en-IN',{month:'long',year:'numeric'})};
+ }
+ if(frequency==='quarterly'){
+  const {fy,q}=fyQuarterInfo(dateStr);
+  return {key:fy+'-Q'+q, label:'Q'+q+' FY '+fy};
+ }
+ if(frequency==='half-yearly'){
+  const {fy,h}=fyQuarterInfo(dateStr);
+  return {key:fy+'-H'+h, label:'H'+h+' FY '+fy};
+ }
+ if(frequency==='annual'){
+  const fy=getFY(dateStr);
+  return {key:fy, label:'FY '+fy};
+ }
+ return {key:dateStr, label:dateStr};
+}
+// Every billing period from the engagement start date (capped at 24 months back) up to the current period.
+function engagementPeriods(e,today){
+ const end=parseISO(today);
+ let d=parseISO(e.startDate && e.startDate<=today ? e.startDate : today);
+ d=new Date(d.getFullYear(),d.getMonth(),1);
+ const minD=new Date(end.getFullYear(),end.getMonth()-23,1);
+ if(d<minD)d=minD;
+ const seen=new Set(), out=[];
+ while(d<=end){
+  const p=periodKeyForDate(localISO(d),e.frequency);
+  if(!seen.has(p.key)){seen.add(p.key);out.push(p);}
+  d=new Date(d.getFullYear(),d.getMonth()+1,1);
+ }
+ return out;
+}
+function computeEngagementSuggestions(){
+ const today=todayISO();
+ const out=[];
+ let ord=0;
+ state.engagements.filter(e=>e.active!==false && e.frequency && e.frequency!=='one-time').forEach(e=>{
+  if(e.startDate && e.startDate>today)return;
+  const client=state.clients.find(c=>c.id===e.clientId);
+  if(!client)return;
+  const service=state.services.find(s=>s.id===e.serviceId);
+  const skipped=e.skippedPeriods||[];
+  engagementPeriods(e,today).forEach(({key,label})=>{
+   if(skipped.includes(key))return;
+   if(state.invoices.some(i=>i.engagementId===e.id && i.enginePeriodKey===key && i.status!=='Cancelled'))return;
+   out.push({
+    key:e.id+'_'+key, engagementId:e.id, periodKey:key, periodLabel:label, ord:ord++,
+    clientId:e.clientId, clientName:client.name,
+    serviceId:e.serviceId, serviceName:service?service.name:(e.serviceName||'Service'),
+    fee:Number(e.professionalFee)||0,
+    gstRate: e.gstRateOverride!=null && e.gstRateOverride!=='' ? Number(e.gstRateOverride) : (service?Number(service.defaultGstRate):Number(state.firm.defaultGstRate)||18)
+   });
+  });
+ });
+ return out.sort((a,b)=>a.clientName.localeCompare(b.clientName)||a.ord-b.ord);
+}
+function renderEngagementSuggestions(list){
+ return '<div class="row between" style="margin-bottom:8px;">'+
+  '<label class="chk-row"><input type="checkbox" id="engSuggSelectAll"> Select All</label>'+
+  '<button type="button" class="btn btn-sm btn-gold" id="genSelectedBtn" disabled>Generate Selected</button>'+
+ '</div>'+
+ '<div class="tbl-wrap"><table><thead><tr><th></th><th>Client</th><th>Service</th><th>Period</th><th class="num">Fee</th><th></th></tr></thead><tbody>'+
+ list.map(s=>'<tr><td><input type="checkbox" class="engSuggChk" data-key="'+s.key+'"></td>'+
+  '<td><b>'+esc(s.clientName)+'</b></td><td>'+esc(s.serviceName)+'</td><td>'+esc(s.periodLabel)+'</td>'+
+  '<td class="num">'+fmtMoney(s.fee)+'</td>'+
+  '<td class="actions-cell"><button type="button" class="btn btn-sm engSuggGenBtn" data-key="'+s.key+'">Generate</button> <button type="button" class="btn btn-sm engSuggSkipBtn" data-key="'+s.key+'" title="Not billable — stop suggesting this period">Skip</button></td></tr>').join('')+
+ '</tbody></table></div>';
+}
+function startInvoiceFromSuggestion(s){
+ const svc=state.services.find(x=>x.id===s.serviceId);
+ duplicateSource={
+  id:null, clientId:s.clientId, invoiceDate:todayISO(),
+  lines:[{id:uid(),serviceId:s.serviceId,description:s.serviceName+' — '+s.periodLabel,sac:svc?svc.sac:'',rate:s.fee,discount:0,discountType:'flat',gstRate:s.gstRate}],
+  gstApplicable:state.firm.gstApplicable, interState:false,
+  paymentMode:'Bank Transfer', status:'Draft', amountReceived:0, paymentRef:'',
+  notes:state.firm.terms||'', dueDate:null, hasDueDate:false,
+  engagementId:s.engagementId, enginePeriodKey:s.periodKey
+ };
+ navigate('invoice/new');
+}
+async function generateDraftFromSuggestion(s){
+ const client=state.clients.find(c=>c.id===s.clientId);
+ if(!client)return;
+ const svc=state.services.find(x=>x.id===s.serviceId);
+ const line={id:uid(),serviceId:s.serviceId,description:s.serviceName+' — '+s.periodLabel,sac:svc?svc.sac:'',rate:s.fee,discount:0,discountType:'flat',gstRate:s.gstRate};
+ const gstApplicable=state.firm.gstApplicable;
+ const interState=!!(client.stateCode && state.firm.stateCode && client.stateCode!==state.firm.stateCode);
+ const t=calcInvoiceTotals([line],gstApplicable,interState);
+ const fy=getFY(todayISO());
+ const rec={
+  id:uid(), invoiceNo:null, invoiceDate:todayISO(), fy,
+  clientId:client.id, clientSnapshot:Object.assign({},client), firmSnapshot:Object.assign({},state.firm),
+  lines:t.lines, gstApplicable, interState,
+  subTotal:t.subTotal, discountTotal:t.discountTotal, taxableTotal:t.taxableTotal,
+  cgstTotal:t.cgstTotal, sgstTotal:t.sgstTotal, igstTotal:t.igstTotal, roundOff:t.roundOff, grandTotal:t.grandTotal,
+  amountInWords:amountInWords(t.grandTotal),
+  paymentMode:'Bank Transfer', status:'Draft', payments:[], amountReceived:0,
+  notes:state.firm.terms||'', dueDate:null,
+  engagementId:s.engagementId, enginePeriodKey:s.periodKey,
+  createdAt:Date.now(), updatedAt:Date.now()
+ };
+ await dbPut('invoices',rec);
+ state.invoices.push(rec);
+ const eng=state.engagements.find(e=>e.id===s.engagementId);
+ if(eng){eng.lastGeneratedPeriod=s.periodKey; await dbPut('engagements',eng);}
+}
+function statCard(lbl,num,sub){
+ return '<div class="card stat-card"><div class="num">'+esc(num)+'</div><div class="lbl">'+esc(lbl)+(sub?' · '+esc(sub):'')+'</div></div>';
+}
+function renderMiniInvoiceList(list,showBalance){
+ if(!list.length)return '<div class="empty-state">Nothing to show yet.</div>';
+ return '<table><tbody>'+list.map(i=>{
+  const client=clientName(i);
+  const bal=(i.grandTotal-i.amountReceived);
+  return '<tr style="cursor:pointer" onclick="navigate(\'invoice/view/'+i.id+'\')">'+
+   '<td><b>'+esc(invNoLabel(i))+'</b><br><span style="color:var(--text-dim);font-size:11.5px;">'+esc(client)+'</span></td>'+
+   '<td style="text-align:right;">'+(showBalance?fmtMoney(bal):fmtMoney(i.grandTotal))+'<br>'+statusBadge(i.status)+'</td>'+
+  '</tr>';
+ }).join('')+'</tbody></table>';
+}
+function clientName(inv){return inv.clientSnapshot ? inv.clientSnapshot.name : '(deleted client)';}
+function statusBadge(status){
+ const map={'Draft':'badge-draft','Issued':'badge-issued','Partly Paid':'badge-partly','Paid':'badge-paid','Cancelled':'badge-cancelled'};
+ return '<span class="badge '+(map[status]||'badge-draft')+'">'+esc(status)+'</span>';
+}
+
+/* ============ FIRM SETTINGS ============ */
+function renderFirmSettings(app){
+ const f=state.firm;
+ app.innerHTML=
+ '<form id="firmForm">'+
+ '<div class="section-title">Firm Details</div>'+
+ '<div class="grid g2">'+
+  field('name','Firm Name*',f.name,'text',true)+
+  select('constitution','Firm Type / Constitution',['Proprietorship','Partnership','LLP','Private Limited','Public Limited','Other'],f.constitution)+
+ '</div>'+
+ field('address','Address',f.address,'textarea')+
+ '<div class="grid g3">'+
+  select('stateCode','State',STATE_LIST.map(s=>[s[0],s[0]+' - '+s[1]]),f.stateCode)+
+  field('pan','PAN',f.pan)+
+  field('gstin','GSTIN (if applicable)',f.gstin)+
+ '</div>'+
+ '<div class="row between" style="margin-bottom:14px;">'+
+  '<div class="chk-row"><input type="checkbox" id="gstApplicable" '+(f.gstApplicable?'checked':'')+'> <label for="gstApplicable">Firm is GST registered (apply GST on invoices)</label></div>'+
+  '<button type="button" class="link-btn" id="retroGstBtn">Review GST on recent invoices</button>'+
+ '</div>'+
+ '<div class="grid g3">'+
+  field('phone','Phone',f.phone)+
+  field('email','Email',f.email)+
+  field('defaultGstRate','Default GST Rate (%)',f.defaultGstRate,'number')+
+ '</div>'+
+ '<div class="section-title">Bank &amp; Payment Details</div>'+
+ '<div class="grid g2">'+
+  field('bankName','Bank Name',f.bankName)+
+  field('accountNumber','Account Number',f.accountNumber)+
+  field('ifsc','IFSC Code',f.ifsc)+
+  field('branch','Branch',f.branch)+
+ '</div>'+
+ field('upi','UPI ID',f.upi)+
+ '<div class="section-title">Logo &amp; Signatory</div>'+
+ '<div class="row" style="align-items:flex-start;gap:16px;margin-bottom:14px;">'+
+  '<img id="logoPreview" class="logo-preview" src="'+(f.logoDataUrl||'')+'" style="'+(f.logoDataUrl?'':'display:none;')+'">'+
+  '<div class="field" style="flex:1;"><label>Upload Logo</label><input type="file" id="logoInput" accept="image/*"><div class="hint">Stored locally. PNG/JPG recommended.</div></div>'+
+ '</div>'+
+ '<div class="grid g2">'+
+  field('signatoryName','Authorised Signatory Name',f.signatoryName)+
+  field('signatoryDesignation','Designation',f.signatoryDesignation)+
+ '</div>'+
+ '<div class="field">'+
+  '<label>Signature</label>'+
+  '<div id="sigPasteZone" contenteditable="true" style="border:1px dashed var(--border);border-radius:8px;padding:14px;font-size:12.5px;color:var(--text-dim);cursor:text;min-height:18px;">Click here and paste (Ctrl+V) a photo or scan of your signature</div>'+
+  '<div class="row" style="margin-top:8px;gap:12px;align-items:center;flex-wrap:wrap;">'+
+   '<img id="signaturePreview" src="'+(f.signatureDataUrl||'')+'" style="max-height:60px;max-width:200px;border:1px solid var(--border);border-radius:6px;background:#fff;padding:4px;'+(f.signatureDataUrl?'':'display:none;')+'">'+
+   '<input type="file" id="signatureFileInput" accept="image/*" style="max-width:230px;">'+
+   '<button type="button" class="link-btn" id="removeSigBtn" style="'+(f.signatureDataUrl?'':'display:none;')+'">Remove signature</button>'+
+  '</div>'+
+  '<div class="hint">Paste a screenshot/photo of your signature, or upload a file. It will appear on every invoice you generate from now on.</div>'+
+ '</div>'+
+ '<div class="section-title">Invoice Numbering</div>'+
+ '<div class="grid g2">'+
+  field('invoicePrefix','Invoice Prefix',f.invoicePrefix)+
+  field('invoiceNumberFormat','Number Format',f.invoiceNumberFormat)+
+ '</div>'+
+ '<div class="hint" style="margin-top:-8px;margin-bottom:14px;">Use tokens: {PREFIX}, {FY}, {SEQ}. Next number preview: <b id="numPreview"></b></div>'+
+ '<div class="section-title">Default Payment Terms</div>'+
+ select('defaultDueDays','Default Due Date',[[0,'No Due Date'],[7,'7 Days'],[15,'15 Days'],[30,'30 Days']],f.defaultDueDays)+
+ '<div class="hint" style="margin-top:-8px;margin-bottom:14px;">Applied when a new invoice is created — always optional and can be switched off per invoice.</div>'+
+ '<div class="section-title">Default Terms & Notes</div>'+
+ field('terms','Terms & Notes',f.terms,'textarea')+
+ '<div class="row" style="justify-content:flex-end;margin-top:10px;">'+
+  '<button type="submit" class="btn btn-primary">Save Firm Details</button>'+
+ '</div>'+
+ '</form>';
+
+ function updatePreview(){
+  const fy=getFY(todayISO());
+  document.getElementById('numPreview').textContent=nextInvoiceNumberPreview(fy).invoiceNo;
+ }
+ updatePreview();
+ document.getElementById('invoicePrefix').addEventListener('input',updatePreview);
+ document.getElementById('invoiceNumberFormat').addEventListener('input',updatePreview);
+ autoUppercase(document.getElementById('pan'));
+ autoUppercase(document.getElementById('gstin'));
+
+ let pendingLogo=null, pendingSignature=null;
+ function readFileAsDataUrl(file){
+  return new Promise((resolve,reject)=>{
+   const reader=new FileReader();
+   reader.onload=()=>resolve(reader.result);
+   reader.onerror=reject;
+   reader.readAsDataURL(file);
+  });
+ }
+ document.getElementById('logoInput').addEventListener('change',async(e)=>{
+  const file=e.target.files[0]; if(!file)return;
+  try{
+   const raw=await readFileAsDataUrl(file);
+   const norm=await normalizeImageToJpeg(raw,420,220,0.92);
+   pendingLogo=norm;
+   const prev=document.getElementById('logoPreview');
+   prev.src=norm.dataUrl; prev.style.display='';
+  }catch(err){toast('Could not read that image','err');}
+ });
+ function applySignaturePreview(norm){
+  pendingSignature=norm;
+  const prev=document.getElementById('signaturePreview');
+  prev.src=norm.dataUrl; prev.style.display='';
+  document.getElementById('removeSigBtn').style.display='';
+ }
+ document.getElementById('signatureFileInput').addEventListener('change',async(e)=>{
+  const file=e.target.files[0]; if(!file)return;
+  try{
+   const raw=await readFileAsDataUrl(file);
+   const norm=await normalizeImageToJpeg(raw,320,140,0.92);
+   applySignaturePreview(norm);
+  }catch(err){toast('Could not read that image','err');}
+ });
+ document.getElementById('sigPasteZone').addEventListener('paste',async(e)=>{
+  const items=(e.clipboardData||window.clipboardData)?(e.clipboardData||window.clipboardData).items:null;
+  if(!items)return;
+  for(const item of items){
+   if(item.type && item.type.indexOf('image')===0){
+    e.preventDefault();
+    const blob=item.getAsFile();
+    try{
+     const raw=await readFileAsDataUrl(blob);
+     const norm=await normalizeImageToJpeg(raw,320,140,0.92);
+     applySignaturePreview(norm);
+     document.getElementById('sigPasteZone').textContent='Signature pasted — paste again to replace';
+    }catch(err){toast('Could not read pasted image','err');}
+    return;
+   }
+  }
+ });
+ document.getElementById('removeSigBtn').addEventListener('click',()=>{
+  pendingSignature='REMOVE';
+  const prev=document.getElementById('signaturePreview'); prev.src=''; prev.style.display='none';
+  document.getElementById('removeSigBtn').style.display='none';
+  document.getElementById('sigPasteZone').textContent='Click here and paste (Ctrl+V) a photo or scan of your signature';
+ });
+ document.getElementById('firmForm').addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const fd=formValues(e.target);
+  if(fd.pan && !isValidPAN(fd.pan)){toast('Invalid PAN format. Expected format: ABCDE1234F','err');return;}
+  if(fd.gstin && !isValidGSTIN(fd.gstin)){toast('Invalid GSTIN format. Expected format: 22ABCDE1234F1Z5','err');return;}
+  if(fd.phone && !isValidPhone(fd.phone)){toast('Invalid phone number. Enter a valid 10-digit mobile number','err');return;}
+  fd.pan=(fd.pan||'').trim().toUpperCase();
+  fd.gstin=(fd.gstin||'').trim().toUpperCase();
+  fd.defaultGstRate=fd.defaultGstRate===''?18:Number(fd.defaultGstRate);
+  fd.defaultDueDays=Number(fd.defaultDueDays)||0;
+  if(!(fd.defaultGstRate>=0&&fd.defaultGstRate<=28)){toast('Default GST rate must be between 0 and 28','err');return;}
+  const stateName=(STATE_LIST.find(s=>s[0]===fd.stateCode)||[,''])[1];
+  const imgFields={};
+  if(pendingLogo){imgFields.logoDataUrl=pendingLogo.dataUrl;imgFields.logoWidth=pendingLogo.width;imgFields.logoHeight=pendingLogo.height;}
+  if(pendingSignature==='REMOVE'){imgFields.signatureDataUrl='';imgFields.signatureWidth=0;imgFields.signatureHeight=0;}
+  else if(pendingSignature){imgFields.signatureDataUrl=pendingSignature.dataUrl;imgFields.signatureWidth=pendingSignature.width;imgFields.signatureHeight=pendingSignature.height;}
+  const prevGstApplicable=!!state.firm.gstApplicable;
+  const newGstApplicable=document.getElementById('gstApplicable').checked;
+  const updated=Object.assign({},state.firm,fd,{
+   gstApplicable:newGstApplicable,
+   stateName
+  },imgFields);
+  state.firm=updated;
+  await dbPut('firm',updated);
+  toast('Firm details saved','ok');
+  if(prevGstApplicable!==newGstApplicable){
+   const wantsReview=await confirmAsync('GST Registration Status Changed',
+    'The firm is now marked as '+(newGstApplicable?'registered':'unregistered')+' under GST. Would you like to review invoices generated in the last 30 days and decide, invoice by invoice or in bulk, whether GST should apply to them?',
+    'Review Invoices');
+   if(wantsReview)openRetroGstReview();
+  }
+ });
+ document.getElementById('retroGstBtn').addEventListener('click',openRetroGstReview);
+}
+
+/* ============ FIELD HELPERS ============ */
+function field(name,label,value,type,required){
+ type=type||'text';
+ if(type==='textarea'){
+  return '<div class="field"><label>'+esc(label)+'</label><textarea name="'+name+'" id="'+name+'">'+esc(value||'')+'</textarea></div>';
+ }
+ return '<div class="field"><label>'+esc(label)+'</label><input type="'+type+'" name="'+name+'" id="'+name+'" value="'+esc(value==null?'':value)+'" '+(required?'required':'')+'></div>';
+}
+function select(name,label,options,value){
+ return '<div class="field"><label>'+esc(label)+'</label><select name="'+name+'" id="'+name+'">'+
+  options.map(o=>{
+   const v=Array.isArray(o)?o[0]:o, l=Array.isArray(o)?o[1]:o;
+   return '<option value="'+esc(v)+'" '+(String(v)===String(value)?'selected':'')+'>'+esc(l)+'</option>';
+  }).join('')+'</select></div>';
+}
+function formValues(form){
+ const out={};
+ form.querySelectorAll('input[name],select[name],textarea[name]').forEach(el=>{
+  if(el.type==='checkbox'){out[el.name]=el.checked;}
+  else out[el.name]=el.value;
+ });
+ return out;
+}
+
+/* ============ CLIENT MASTER ============ */
+function renderClients(app){
+ app.innerHTML=
+ '<div class="toolbar between">'+
+  '<input type="text" id="clientSearch" placeholder="Search clients by name, GSTIN, mobile..." style="min-width:280px;">'+
+  '<button class="btn btn-primary" id="addClientBtn">+ Add Client</button>'+
+ '</div>'+
+ '<div class="tbl-wrap"><table><thead><tr><th>Name</th><th>GSTIN</th><th>State</th><th>Mobile</th><th>Email</th><th></th></tr></thead><tbody id="clientRows"></tbody></table></div>';
+
+ function draw(filter){
+  const q=(filter||'').toLowerCase();
+  const rows=state.clients.filter(c=>!q || (c.name||'').toLowerCase().includes(q) || (c.gstin||'').toLowerCase().includes(q) || (c.mobile||'').includes(q));
+  const tbody=document.getElementById('clientRows');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state">No clients found.</div></td></tr>';return;}
+  tbody.innerHTML=rows.map(c=>
+   '<tr><td><b>'+esc(c.name)+'</b>'+(c.contactPerson?'<br><span style="color:var(--text-dim);font-size:11.5px;">'+esc(c.contactPerson)+'</span>':'')+'</td>'+
+   '<td>'+esc(c.gstin||'-')+'</td><td>'+esc(c.stateName||'-')+'</td><td>'+esc(c.mobile||'-')+'</td><td>'+esc(c.email||'-')+'</td>'+
+   '<td class="actions-cell">'+
+    '<span class="icon-link" onclick="navigate(\'client/ledger/'+c.id+'\')">Ledger</span>'+
+    '<span class="icon-link" onclick="editClient(\''+c.id+'\')">Edit</span>'+
+    '<span class="icon-link danger" onclick="deleteClient(\''+c.id+'\')">Delete</span>'+
+   '</td></tr>'
+  ).join('');
+ }
+ draw('');
+ document.getElementById('clientSearch').addEventListener('input',debounce(e=>draw(e.target.value),120));
+ document.getElementById('addClientBtn').addEventListener('click',()=>openClientModal(null));
+ window.editClient=(id)=>openClientModal(state.clients.find(c=>c.id===id));
+ window.deleteClient=(id)=>{
+  const used=state.invoices.some(i=>i.clientId===id);
+  confirmDialog('Delete Client', used? 'This client has invoices on record. Deleting the client will keep historical invoices intact (they store a snapshot) but remove it and its saved fee engagements from the client master. Continue?' : 'Are you sure you want to delete this client and any saved fee engagements?','Delete',async()=>{
+   await dbDelete('clients',id);
+   state.clients=state.clients.filter(c=>c.id!==id);
+   for(const en of state.engagements.filter(x=>x.clientId===id))await dbDelete('engagements',en.id);
+   state.engagements=state.engagements.filter(x=>x.clientId!==id);
+   draw(document.getElementById('clientSearch').value);
+   toast('Client deleted');
+  });
+ };
+}
+function openClientModal(client, onSaved){
+ const c=client||{id:uid(),name:'',billingAddress:'',pan:'',gstin:'',stateCode:state.firm.stateCode,stateName:state.firm.stateName,mobile:'',email:'',contactPerson:'',notes:''};
+ openModal(
+ '<div class="modal-head"><h3>'+(client?'Edit Client':'Add Client')+'</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>'+
+ '<form id="clientForm">'+
+  '<div class="grid g2">'+field('name','Client / Business Name*',c.name,'text',true)+field('contactPerson','Contact Person',c.contactPerson)+'</div>'+
+  field('billingAddress','Billing Address',c.billingAddress,'textarea')+
+  '<div class="grid g3">'+select('stateCode','State',STATE_LIST.map(s=>[s[0],s[0]+' - '+s[1]]),c.stateCode)+field('pan','PAN',c.pan)+field('gstin','GSTIN',c.gstin)+'</div>'+
+  '<div class="grid g2">'+field('mobile','Mobile',c.mobile)+field('email','Email',c.email)+'</div>'+
+  field('notes','Notes',c.notes,'textarea')+
+  '<div class="row" style="justify-content:flex-end;">'+
+   '<button type="button" class="btn" onclick="closeModal()">Cancel</button>'+
+   '<button type="submit" class="btn btn-primary">Save Client</button>'+
+  '</div>'+
+ '</form>'
+ );
+ const clientFormEl=document.getElementById('clientForm');
+ autoUppercase(clientFormEl.querySelector('[name="pan"]'));
+ autoUppercase(clientFormEl.querySelector('[name="gstin"]'));
+ clientFormEl.addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const fd=formValues(e.target);
+  if(!fd.name.trim()){toast('Client name is required','err');return;}
+  if(fd.pan && !isValidPAN(fd.pan)){toast('Invalid PAN format. Expected format: ABCDE1234F','err');return;}
+  if(fd.gstin && !isValidGSTIN(fd.gstin)){toast('Invalid GSTIN format. Expected format: 22ABCDE1234F1Z5','err');return;}
+  if(fd.mobile && !isValidPhone(fd.mobile)){toast('Invalid mobile number. Enter a valid 10-digit mobile number','err');return;}
+  fd.pan=(fd.pan||'').trim().toUpperCase();
+  fd.gstin=(fd.gstin||'').trim().toUpperCase();
+  const dup=state.clients.find(x=>x.id!==c.id && ((fd.gstin && x.gstin && x.gstin.toLowerCase()===fd.gstin.toLowerCase()) || (x.name.toLowerCase()===fd.name.trim().toLowerCase() && x.mobile===fd.mobile)));
+  const stateName=(STATE_LIST.find(s=>s[0]===fd.stateCode)||[,''])[1];
+  const finalize=async()=>{
+   const rec=Object.assign({},c,fd,{stateName,updatedAt:Date.now(),createdAt:c.createdAt||Date.now()});
+   await dbPut('clients',rec);
+   const idx=state.clients.findIndex(x=>x.id===rec.id);
+   if(idx>=0)state.clients[idx]=rec; else state.clients.push(rec);
+   closeModal();
+   toast('Client saved','ok');
+   if(onSaved)onSaved(rec);
+   if(location.hash.includes('clients'))renderRoute();
+  };
+  if(dup){
+   confirmDialog('Possible Duplicate','A similar client ("'+dup.name+'") already exists. Save anyway?','Save Anyway',finalize);
+  } else { await finalize(); }
+ });
+}
+
+/* ============ SERVICE MASTER ============ */
+function renderServices(app){
+ app.innerHTML=
+ '<div class="toolbar between"><div></div><button class="btn btn-primary" id="addServiceBtn">+ Add Service</button></div>'+
+ '<div class="tbl-wrap"><table><thead><tr><th>Service Name</th><th>SAC</th><th>GST Treatment</th><th>Default GST %</th><th>Default Rate</th><th></th></tr></thead><tbody id="svcRows"></tbody></table></div>';
+ function draw(){
+  const tbody=document.getElementById('svcRows');
+  if(!state.services.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state">No services yet.</div></td></tr>';return;}
+  tbody.innerHTML=state.services.map(s=>
+   '<tr><td><b>'+esc(s.name)+'</b><br><span style="color:var(--text-dim);font-size:11.5px;">'+esc(s.description||'')+'</span></td>'+
+   '<td>'+esc(s.sac||'-')+'</td><td>'+esc(s.gstTreatment||'taxable')+'</td><td>'+esc(s.defaultGstRate)+'%</td><td>'+(s.rate?fmtMoney(s.rate):'-')+'</td>'+
+   '<td class="actions-cell"><span class="icon-link" onclick="editService(\''+s.id+'\')">Edit</span><span class="icon-link danger" onclick="deleteService(\''+s.id+'\')">Delete</span></td></tr>'
+  ).join('');
+ }
+ draw();
+ document.getElementById('addServiceBtn').addEventListener('click',()=>openServiceModal(null,draw));
+ window.editService=(id)=>openServiceModal(state.services.find(s=>s.id===id),draw);
+ window.deleteService=(id)=>{
+  confirmDialog('Delete Service','Are you sure you want to delete this service?','Delete',async()=>{
+   await dbDelete('services',id);
+   state.services=state.services.filter(s=>s.id!==id);
+   draw();
+   toast('Service deleted');
+  });
+ };
+}
+function openServiceModal(svc,onDone){
+ const s=svc||{id:uid(),name:'',description:'',sac:'',rate:0,gstTreatment:'taxable',defaultGstRate:state.firm.defaultGstRate||18};
+ openModal(
+ '<div class="modal-head"><h3>'+(svc?'Edit Service':'Add Service')+'</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>'+
+ '<form id="svcForm">'+
+  field('name','Service Name*',s.name,'text',true)+
+  field('description','Default Description',s.description,'textarea')+
+  '<div class="grid g3">'+field('sac','SAC Code',s.sac)+select('gstTreatment','GST Treatment',[['taxable','Taxable'],['exempt','Exempt'],['nil','Nil Rated'],['non-gst','Non-GST']],s.gstTreatment)+field('defaultGstRate','Default GST %',s.defaultGstRate,'number')+'</div>'+
+  field('rate','Default Rate (₹, optional)',s.rate,'number')+
+  '<div class="row" style="justify-content:flex-end;"><button type="button" class="btn" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-primary">Save Service</button></div>'+
+ '</form>'
+ );
+ document.getElementById('svcForm').addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const fd=formValues(e.target);
+  if(!fd.name.trim()){toast('Service name required','err');return;}
+  fd.rate=Math.max(0,Number(fd.rate)||0);
+  fd.defaultGstRate=Number(fd.defaultGstRate)||0;
+  if(!GST_RATES.includes(fd.defaultGstRate)){toast('GST % must be one of '+GST_RATES.join(', '),'err');return;}
+  const rec=Object.assign({},s,fd,{createdAt:s.createdAt||Date.now()});
+  await dbPut('services',rec);
+  const idx=state.services.findIndex(x=>x.id===rec.id);
+  if(idx>=0)state.services[idx]=rec; else state.services.push(rec);
+  closeModal();
+  toast('Service saved','ok');
+  if(onDone)onDone(rec);
+ });
+}
+
+/* ============ SETTINGS HUB ============ */
+const FREQ_LABELS={'one-time':'One-time','monthly':'Monthly','quarterly':'Quarterly','half-yearly':'Half-yearly','annual':'Annual'};
+function renderSettings(app,sub){
+ sub=sub||'firm';
+ const tabs=[['firm','Firm & Invoice'],['services','Services'],['engagements','Fees & Engagements'],['reminders','Reminders'],['data','Data']];
+ app.innerHTML='<div class="settings-shell">'+
+  '<div class="settings-nav">'+tabs.map(t=>'<div class="s-item'+(sub===t[0]?' active':'')+'" data-tab="'+t[0]+'">'+t[1]+'</div>').join('')+'</div>'+
+  '<div class="settings-body" id="settingsBody"></div>'+
+ '</div>';
+ document.querySelectorAll('.settings-nav .s-item').forEach(el=>el.addEventListener('click',()=>navigate('settings/'+el.dataset.tab)));
+ const body=document.getElementById('settingsBody');
+ if(sub==='services')renderServices(body);
+ else if(sub==='engagements')renderEngagementsSettings(body);
+ else if(sub==='reminders')renderRemindersSettings(body);
+ else if(sub==='data')renderBackup(body);
+ else renderFirmSettings(body);
+}
+
+/* ---- Fees & Engagements ---- */
+function renderEngagementsSettings(app){
+ app.innerHTML=
+ '<div class="toolbar between"><div class="hint">Save recurring client fees once — invoices can auto-populate from these, and the Dashboard will flag when a new period is due.</div><button class="btn btn-primary" id="addEngBtn">+ Add Engagement</button></div>'+
+ '<div class="tbl-wrap"><table><thead><tr><th>Client</th><th>Service</th><th>Frequency</th><th class="num">Fee</th><th>GST%</th><th>Status</th><th></th></tr></thead><tbody id="engRows"></tbody></table></div>';
+ function draw(){
+  const tbody=document.getElementById('engRows');
+  if(!state.engagements.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state">No recurring fee engagements yet.</div></td></tr>';return;}
+  tbody.innerHTML=state.engagements.map(e=>{
+   const client=state.clients.find(c=>c.id===e.clientId);
+   const svc=state.services.find(s=>s.id===e.serviceId);
+   return '<tr><td>'+esc(client?client.name:'(deleted client)')+'</td><td>'+esc(svc?svc.name:'(deleted service)')+'</td>'+
+    '<td>'+esc(FREQ_LABELS[e.frequency]||e.frequency)+'</td><td class="num">'+fmtMoney(e.professionalFee)+'</td>'+
+    '<td>'+(e.gstRateOverride!=null && e.gstRateOverride!==''?e.gstRateOverride+'%':'(default)')+'</td>'+
+    '<td>'+(e.active===false?'<span class="badge badge-cancelled">Inactive</span>':'<span class="badge badge-paid">Active</span>')+'</td>'+
+    '<td class="actions-cell"><span class="icon-link" onclick="editEngagement(\''+e.id+'\')">Edit</span><span class="icon-link danger" onclick="deleteEngagement(\''+e.id+'\')">Delete</span></td></tr>';
+  }).join('');
+ }
+ draw();
+ document.getElementById('addEngBtn').addEventListener('click',()=>openEngagementModal(null,draw));
+ window.editEngagement=(id)=>openEngagementModal(state.engagements.find(e=>e.id===id),draw);
+ window.deleteEngagement=(id)=>{
+  confirmDialog('Delete Engagement','Remove this recurring fee engagement? Invoices already generated from it are not affected.','Delete',async()=>{
+   await dbDelete('engagements',id);
+   state.engagements=state.engagements.filter(e=>e.id!==id);
+   draw(); toast('Engagement deleted');
+  });
+ };
+}
+function openEngagementModal(eng,onDone){
+ if(!state.clients.length){toast('Add a client first','err');return;}
+ if(!state.services.length){toast('Add a service first','err');return;}
+ const e=eng||{id:uid(),clientId:state.clients[0].id,serviceId:state.services[0].id,professionalFee:0,gstRateOverride:'',frequency:'monthly',active:true,startDate:todayISO(),notes:''};
+ openModal(
+ '<div class="modal-head"><h3>'+(eng?'Edit Engagement':'Add Fee Engagement')+'</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>'+
+ '<form id="engForm">'+
+  '<div class="grid g2">'+select('clientId','Client*',state.clients.map(c=>[c.id,c.name]),e.clientId)+select('serviceId','Service*',state.services.map(s=>[s.id,s.name]),e.serviceId)+'</div>'+
+  '<div class="grid g3">'+
+   select('frequency','Frequency',[['one-time','One-time'],['monthly','Monthly'],['quarterly','Quarterly'],['half-yearly','Half-yearly'],['annual','Annual']],e.frequency)+
+   field('professionalFee','Professional Fee (₹)*',e.professionalFee,'number',true)+
+   field('gstRateOverride','GST % (blank = service default)',e.gstRateOverride,'number')+
+  '</div>'+
+  field('startDate','Start Date',e.startDate,'date')+
+  '<div class="chk-row" style="margin-bottom:12px;"><input type="checkbox" id="engActive" '+(e.active!==false?'checked':'')+'><label for="engActive">Active</label></div>'+
+  field('notes','Notes',e.notes,'textarea')+
+  '<div class="row" style="justify-content:flex-end;"><button type="button" class="btn" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-primary">Save Engagement</button></div>'+
+ '</form>'
+ );
+ document.getElementById('engForm').addEventListener('submit',async(ev)=>{
+  ev.preventDefault();
+  const fd=formValues(ev.target);
+  if(!fd.clientId||!fd.serviceId){toast('Select client and service','err');return;}
+  if(!Number(fd.professionalFee)||Number(fd.professionalFee)<=0){toast('Enter a valid professional fee','err');return;}
+  fd.professionalFee=Number(fd.professionalFee);
+  if(fd.gstRateOverride!==''){
+   fd.gstRateOverride=Number(fd.gstRateOverride);
+   if(!GST_RATES.includes(fd.gstRateOverride)){toast('GST % must be one of '+GST_RATES.join(', ')+' (or blank)','err');return;}
+  }
+  const rec=Object.assign({},e,fd,{active:document.getElementById('engActive').checked,lastGeneratedPeriod:e.lastGeneratedPeriod||null,createdAt:e.createdAt||Date.now(),updatedAt:Date.now()});
+  await dbPut('engagements',rec);
+  const idx=state.engagements.findIndex(x=>x.id===rec.id);
+  if(idx>=0)state.engagements[idx]=rec; else state.engagements.push(rec);
+  closeModal(); toast('Engagement saved','ok');
+  if(onDone)onDone();
+ });
+}
+
+/* ---- Reminders settings ---- */
+function renderRemindersSettings(app){
+ const f=state.firm;
+ app.innerHTML=
+ '<form id="remForm">'+
+ '<div class="hint" style="margin-bottom:14px;">Placeholders: {CLIENT} {INVOICE_NO} {DATE} {AMOUNT} {FIRM} {BANK} — replaced automatically when a reminder is sent. Nothing is sent automatically; these only pre-fill WhatsApp / Gmail for you to review and send.</div>'+
+ '<div class="section-title">WhatsApp Reminder</div>'+
+ field('waReminderTemplate','Message Template',f.waReminderTemplate,'textarea')+
+ '<div class="section-title">Email Reminder (opens in Gmail)</div>'+
+ field('emailReminderSubject','Subject',f.emailReminderSubject)+
+ field('emailReminderBody','Body',f.emailReminderBody,'textarea')+
+ '<div class="row" style="justify-content:flex-end;"><button type="submit" class="btn btn-primary">Save Reminder Templates</button></div>'+
+ '</form>';
+ document.getElementById('remForm').addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const fd=formValues(e.target);
+  state.firm=Object.assign({},state.firm,fd);
+  await dbPut('firm',state.firm);
+  toast('Reminder templates saved','ok');
+ });
+}
+function fillReminderTemplate(tpl,inv){
+ const c=inv.clientSnapshot||{}, f=inv.firmSnapshot||state.firm;
+ let bank='';
+ if(f.bankName)bank='Bank: '+f.bankName+(f.accountNumber?' | A/c: '+f.accountNumber:'')+(f.ifsc?' | IFSC: '+f.ifsc:'');
+ else if(f.upi)bank='UPI: '+f.upi;
+ return String(tpl||'')
+  .replace(/{CLIENT}/g,c.name||'')
+  .replace(/{INVOICE_NO}/g,inv.invoiceNo||'')
+  .replace(/{DATE}/g,fmtDate(inv.invoiceDate))
+  .replace(/{AMOUNT}/g,fmtMoney(invoiceBalance(inv)))
+  .replace(/{FIRM}/g,f.name||'')
+  .replace(/{BANK}/g,bank);
+}
+function sendReminderWhatsApp(inv){
+ if(!inv)return;
+ const c=inv.clientSnapshot||{};
+ if(!c.mobile){toast('This client has no mobile number on file','err');return;}
+ let digits=String(c.mobile).replace(/\D/g,'');
+ if(digits.length===10)digits='91'+digits;
+ const msg=fillReminderTemplate(state.firm.waReminderTemplate,inv);
+ window.open('https://wa.me/'+digits+'?text='+encodeURIComponent(msg),'_blank');
+}
+function sendReminderEmail(inv){
+ if(!inv)return;
+ const c=inv.clientSnapshot||{};
+ if(!c.email){toast('This client has no email on file','err');return;}
+ const subject=fillReminderTemplate(state.firm.emailReminderSubject,inv);
+ const body=fillReminderTemplate(state.firm.emailReminderBody,inv);
+ const url='https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(c.email)+'&su='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+ window.open(url,'_blank');
+}
+window.sendReminderWhatsApp=sendReminderWhatsApp;
+window.sendReminderEmail=sendReminderEmail;
+window.openPaymentModalById=function(id){const inv=state.invoices.find(i=>i.id===id); if(inv)openPaymentModal(inv);};
+
+/* ============ AUTOCOMPLETE COMPONENT ============ */
+function buildAutocomplete(containerId, items, opts){
+ const wrap=document.getElementById(containerId);
+ wrap.classList.add('autocomplete-wrap');
+ wrap.innerHTML='<input type="text" id="'+containerId+'_input" placeholder="'+esc(opts.placeholder||'Search...')+'" autocomplete="off" value="'+esc(opts.initialText||'')+'">'+
+  '<div class="ac-list" id="'+containerId+'_list"></div>';
+ const input=document.getElementById(containerId+'_input');
+ const list=document.getElementById(containerId+'_list');
+ let hl=-1;
+ function renderList(q){
+  const ql=(q||'').toLowerCase();
+  const filtered=items().filter(it=>!ql || opts.matchText(it).toLowerCase().includes(ql)).slice(0,30);
+  if(!filtered.length){list.classList.remove('open');list.innerHTML='';return;}
+  list.innerHTML=filtered.map((it,idx)=>'<div class="ac-item" data-idx="'+idx+'">'+opts.renderItem(it)+'</div>').join('');
+  list.classList.add('open');
+  hl=-1;
+  list.__filtered=filtered;
+ }
+ input.addEventListener('input',()=>renderList(input.value));
+ input.addEventListener('focus',()=>renderList(input.value));
+ input.addEventListener('blur',()=>setTimeout(()=>list.classList.remove('open'),150));
+ input.addEventListener('keydown',(e)=>{
+  const items2=list.querySelectorAll('.ac-item');
+  if(e.key==='ArrowDown'){hl=Math.min(hl+1,items2.length-1);updateHl(items2);e.preventDefault();}
+  else if(e.key==='ArrowUp'){hl=Math.max(hl-1,0);updateHl(items2);e.preventDefault();}
+  else if(e.key==='Enter'){if(hl>=0 && list.__filtered[hl]){opts.onSelect(list.__filtered[hl]);list.classList.remove('open');e.preventDefault();}}
+ });
+ function updateHl(items2){items2.forEach((el,i)=>el.classList.toggle('hl',i===hl));if(items2[hl])items2[hl].scrollIntoView({block:'nearest'});}
+ list.addEventListener('mousedown',(e)=>{
+  const item=e.target.closest('.ac-item');
+  if(item){opts.onSelect(list.__filtered[Number(item.dataset.idx)]);}
+ });
+ return {setText:(t)=>{input.value=t;}, refresh:()=>renderList(input.value)};
+}
+
+/* ============ INVOICE FORM (New / Edit) ============ */
+let invForm={
+ id:null, clientId:null, invoiceDate:todayISO(), lines:[], gstApplicable:false, interState:false,
+ paymentMode:'Bank Transfer', status:'Draft', amountReceived:0, paymentRef:'', notes:'',
+ hasDueDate:false, dueDate:null, engagementId:null, enginePeriodKey:null
+};
+let duplicateSource=null;
+function blankLine(){return {id:uid(),serviceId:'',description:'',sac:'',rate:0,discount:0,discountType:'flat',gstRate:state.firm.defaultGstRate||18};}
+
+function renderInvoiceForm(app, editId){
+ const editing = !!editId;
+ const existing = editing ? state.invoices.find(i=>i.id===editId) : null;
+ if(editing && !existing){app.innerHTML='<div class="empty-state">Invoice not found.</div>';return;}
+ if(editing){
+  invForm={id:existing.id,clientId:existing.clientId,invoiceDate:existing.invoiceDate,lines:existing.lines.map(l=>Object.assign({},l)),
+   gstApplicable:existing.gstApplicable,interState:existing.interState,paymentMode:existing.paymentMode,status:existing.status,
+   amountReceived:existing.amountReceived||0,paymentRef:existing.paymentRef||'',notes:existing.notes||'',
+   hasDueDate:!!existing.dueDate,dueDate:existing.dueDate||null,engagementId:existing.engagementId||null,enginePeriodKey:existing.enginePeriodKey||null,
+   invoiceNo:existing.invoiceNo, fy:existing.fy, seq:existing.seq, invoiceNoManual:!!existing.invoiceNo,
+   paymentsLocked:(existing.amountReceived||0)>0};
+ } else if(duplicateSource){
+  invForm=duplicateSource; duplicateSource=null; invForm.invoiceNoManual=false;
+  if(invForm.hasDueDate==null)invForm.hasDueDate=false;
+  if(invForm.dueDate===undefined)invForm.dueDate=null;
+  if(invForm.engagementId===undefined)invForm.engagementId=null;
+  if(invForm.enginePeriodKey===undefined)invForm.enginePeriodKey=null;
+ } else {
+  const useDueDate=Number(state.firm.defaultDueDays)>0;
+  invForm={id:null,clientId:null,invoiceDate:todayISO(),lines:[blankLine()],gstApplicable:state.firm.gstApplicable,interState:false,
+   paymentMode:'Bank Transfer',status:'Draft',amountReceived:0,paymentRef:'',notes:state.firm.terms||'',
+   hasDueDate:useDueDate,dueDate:useDueDate?addDaysISO(todayISO(),state.firm.defaultDueDays):null,engagementId:null,enginePeriodKey:null,
+   invoiceNoManual:false};
+ }
+ if(!state.firm.gstApplicable) invForm.gstApplicable=false;
+
+ app.innerHTML=
+ '<div class="grid inv-layout">'+
+  '<div>'+
+   '<div class="card" style="margin-bottom:16px;">'+
+    '<h3>1. Client</h3>'+
+    '<div class="row" style="align-items:flex-start;gap:14px;">'+
+     '<div id="clientAC" style="flex:1;"></div>'+
+     '<button type="button" class="btn btn-sm" id="newClientBtn" style="margin-top:2px;">+ New Client</button>'+
+    '</div>'+
+    '<div id="clientSummary" style="margin-top:12px;"></div>'+
+    '<div id="engQuickAdd" style="margin-top:10px;"></div>'+
+   '</div>'+
+   '<div class="card" style="margin-bottom:16px;">'+
+    '<div class="row between"><h3 style="margin:0;">2. Nature of Service &amp; Amount</h3>'+
+     (state.firm.gstApplicable?'<div class="chk-row"><input type="checkbox" id="gstAppChk" '+(invForm.gstApplicable?'checked':'')+'><label for="gstAppChk">Apply GST</label>&nbsp;&nbsp;<span id="interStateTag" style="font-size:11.5px;color:var(--text-dim);"></span></div>':'<span style="font-size:11.5px;color:var(--text-dim);">Firm not GST registered</span>')+
+    '</div>'+
+    '<div class="tbl-wrap" style="margin-top:10px;"><table class="line-tbl"><thead><tr><th style="width:32%;">Service / Description</th><th style="width:14%;">Amount</th><th style="width:14%;">Discount</th><th style="width:10%;">GST%</th><th class="num" style="width:14%;">Taxable</th><th class="num" style="width:14%;">Total</th><th></th></tr></thead><tbody id="lineRows"></tbody></table></div>'+
+    '<div class="row" style="margin-top:10px;gap:8px;"><button type="button" class="btn btn-sm" id="addLineBtn">+ Add Line</button><button type="button" class="btn btn-sm" id="addServiceBtn2">+ New Service</button></div>'+
+   '</div>'+
+   '<div class="card" style="margin-bottom:16px;">'+
+    '<h3>3. Payment</h3>'+
+    '<div class="grid g3">'+
+     select('paymentModeSel','Payment Mode',PAYMENT_MODES,invForm.paymentMode)+
+     (invForm.paymentsLocked
+      ? '<div class="field"><label>Amount Received</label><input type="number" id="amountReceivedInp" value="'+esc(invForm.amountReceived)+'" disabled><div class="hint">Use Record Payment on the invoice page to add receipts.</div></div>'
+      : field('amountReceivedInp','Amount Received Now',invForm.amountReceived,'number'))+
+     field('paymentRefInp','Reference / UTR No.',invForm.paymentRef)+
+    '</div>'+
+    '<div class="grid g2">'+
+     field('invoiceDateInp','Invoice Date',invForm.invoiceDate,'date')+
+     '<div class="field"><label>Payment Due Date</label>'+
+      '<div class="chk-row" style="margin-bottom:6px;"><input type="checkbox" id="hasDueDateChk" '+(invForm.hasDueDate?'checked':'')+'><label for="hasDueDateChk">Add a due date</label></div>'+
+      '<div id="dueDateWrap" style="'+(invForm.hasDueDate?'':'display:none;')+'"><input type="date" id="dueDateInp" value="'+esc(invForm.dueDate||addDaysISO(invForm.invoiceDate,state.firm.defaultDueDays||0))+'"></div>'+
+     '</div>'+
+    '</div>'+
+    '<details class="more-options">'+
+     '<summary>More Options</summary>'+
+     field('invoiceNoInp','Invoice Number',invForm.invoiceNo||nextInvoiceNumberPreview(getFY(invForm.invoiceDate)).invoiceNo,'text')+
+     '<div class="hint" style="margin-top:-8px;margin-bottom:12px;">Assigned from Firm Settings numbering when the invoice is generated (drafts don\'t use up numbers). You can type your own; you\'ll be warned if it duplicates an existing invoice.</div>'+
+     field('notesInp','Terms & Notes',invForm.notes,'textarea')+
+    '</details>'+
+   '</div>'+
+  '</div>'+
+  '<div>'+
+   '<div class="card summary-card">'+
+    '<h3>Summary</h3>'+
+    '<div id="invNoPreview" style="font-size:13px;margin-bottom:10px;"></div>'+
+    '<div id="totalsBox"></div>'+
+    '<div class="row" style="flex-direction:column;gap:8px;margin-top:16px;">'+
+     '<button type="button" class="btn" id="previewBtn">Preview Invoice</button>'+
+     (invForm.status && invForm.status!=='Draft'
+      ? '<button type="button" class="btn btn-gold" id="saveDraftBtn">Save Changes</button>'
+      : '<button type="button" class="btn" id="saveDraftBtn">Save as Draft</button><button type="button" class="btn btn-gold" id="generateBtn">Generate Invoice</button>')+
+    '</div>'+
+   '</div>'+
+  '</div>'+
+ '</div>';
+
+ // client autocomplete
+ const clientAC=buildAutocomplete('clientAC', ()=>state.clients, {
+  placeholder:'Search or select client...',
+  initialText: invForm.clientId ? (state.clients.find(c=>c.id===invForm.clientId)||{}).name : '',
+  matchText:(c)=>[c.name,c.gstin,c.mobile].join(' '),
+  renderItem:(c)=>'<b>'+esc(c.name)+'</b><div class="sub">'+esc(c.gstin||c.mobile||'')+'</div>',
+  onSelect:(c)=>{invForm.clientId=c.id;clientAC.setText(c.name);renderClientSummary();renderEngQuickAdd();recalcInterState();redrawTotals();}
+ });
+ function renderClientSummary(){
+  const c=state.clients.find(x=>x.id===invForm.clientId);
+  const box=document.getElementById('clientSummary');
+  if(!c){box.innerHTML='';return;}
+  box.innerHTML='<div style="font-size:12.5px;background:#f8f9fc;border:1px solid var(--border);border-radius:8px;padding:10px 12px;line-height:1.6;">'+
+   '<b>'+esc(c.name)+'</b><br>'+esc(c.billingAddress||'')+'<br>'+
+   (c.gstin?'GSTIN: '+esc(c.gstin)+' &middot; ':'')+'State: '+esc(c.stateName||'-')+'<br>'+
+   (c.mobile?'Mobile: '+esc(c.mobile)+' &middot; ':'')+(c.email?'Email: '+esc(c.email):'')+
+   '</div>';
+ }
+ function renderEngQuickAdd(){
+  const box=document.getElementById('engQuickAdd');
+  if(!box)return;
+  const list=state.engagements.filter(e=>e.clientId===invForm.clientId && e.active!==false);
+  if(!list.length){box.innerHTML='';return;}
+  box.innerHTML='<div class="hint" style="margin-bottom:6px;">Saved fees for this client — click to add:</div>'+
+   list.map(e=>{
+    const svc=state.services.find(s=>s.id===e.serviceId);
+    return '<button type="button" class="btn btn-sm" style="margin:0 6px 6px 0;" data-eng="'+e.id+'">'+esc(svc?svc.name:'Service')+' — '+fmtMoney(e.professionalFee)+'</button>';
+   }).join('');
+  box.querySelectorAll('[data-eng]').forEach(btn=>btn.addEventListener('click',()=>{
+   const eng=state.engagements.find(x=>x.id===btn.dataset.eng);
+   if(!eng)return;
+   const svc=state.services.find(s=>s.id===eng.serviceId);
+   const gstRate=eng.gstRateOverride!=null && eng.gstRateOverride!=='' ? Number(eng.gstRateOverride) : (svc?Number(svc.defaultGstRate):state.firm.defaultGstRate||18);
+   const line={id:uid(),serviceId:eng.serviceId,description:svc?svc.name:'Service',sac:svc?svc.sac:'',rate:Number(eng.professionalFee)||0,discount:0,discountType:'flat',gstRate};
+   const emptyIdx=invForm.lines.findIndex(l=>!l.description && !Number(l.rate));
+   if(emptyIdx>=0)invForm.lines[emptyIdx]=line; else invForm.lines.push(line);
+   invForm.engagementId=eng.id;
+   invForm.enginePeriodKey=periodKeyForDate(invForm.invoiceDate,eng.frequency).key;
+   invForm.periodFromDate=true;
+   drawLines(); redrawTotals();
+   toast('Fee added from engagement','ok');
+  }));
+ }
+ renderClientSummary();
+ renderEngQuickAdd();
+ document.getElementById('newClientBtn').addEventListener('click',()=>{
+  openClientModal(null,(rec)=>{invForm.clientId=rec.id;clientAC.setText(rec.name);renderClientSummary();renderEngQuickAdd();recalcInterState();redrawTotals();});
+ });
+
+ function recalcInterState(){
+  const c=state.clients.find(x=>x.id===invForm.clientId);
+  invForm.interState = !!(c && c.stateCode && state.firm.stateCode && c.stateCode!==state.firm.stateCode);
+  const tag=document.getElementById('interStateTag');
+  if(tag)tag.textContent = c ? (invForm.interState?'Inter-state (IGST)':'Intra-state (CGST+SGST)') : '';
+ }
+ recalcInterState();
+
+ const gstChk=document.getElementById('gstAppChk');
+ if(gstChk)gstChk.addEventListener('change',()=>{invForm.gstApplicable=gstChk.checked;drawLines();redrawTotals();});
+
+ function drawLines(){
+  const tbody=document.getElementById('lineRows');
+  tbody.innerHTML=invForm.lines.map((l,idx)=>{
+   const calc=calcLine(l,invForm.gstApplicable,invForm.interState);
+   return '<tr data-idx="'+idx+'">'+
+    '<td><input type="text" class="ln-desc" list="svcList" value="'+esc(l.description)+'" placeholder="Type or pick a service"></td>'+
+    '<td><input type="number" class="ln-rate" min="0" step="0.01" value="'+l.rate+'" placeholder="Amount"></td>'+
+    '<td><div class="row" style="gap:4px;"><input type="number" class="ln-disc" min="0" step="0.01" value="'+l.discount+'" style="width:60%;"><select class="ln-disctype" style="width:40%;"><option value="flat" '+(l.discountType==='flat'?'selected':'')+'>₹</option><option value="percent" '+(l.discountType==='percent'?'selected':'')+'>%</option></select></div></td>'+
+    '<td><select class="ln-gst">'+GST_RATES.map(r=>'<option value="'+r+'" '+(Number(l.gstRate)===r?'selected':'')+'>'+r+'%</option>').join('')+'</select></td>'+
+    '<td class="num">'+fmtMoney(calc.taxable)+'</td>'+
+    '<td class="num">'+fmtMoney(calc.lineTotal)+'</td>'+
+    '<td><span class="icon-link danger" onclick="removeInvLine('+idx+')">&times;</span></td>'+
+   '</tr>';
+  }).join('');
+  if(!document.getElementById('svcList')){
+   const dl=document.createElement('datalist'); dl.id='svcList';
+   document.body.appendChild(dl);
+  }
+  document.getElementById('svcList').innerHTML=state.services.map(s=>'<option value="'+esc(s.name)+'">').join('');
+
+  tbody.querySelectorAll('tr').forEach(tr=>{
+   const idx=Number(tr.dataset.idx);
+   tr.querySelector('.ln-desc').addEventListener('input',(e)=>{
+    invForm.lines[idx].description=e.target.value;
+    const svc=state.services.find(s=>s.name===e.target.value);
+    if(svc){
+     invForm.lines[idx].serviceId=svc.id;
+     invForm.lines[idx].sac=svc.sac;
+     invForm.lines[idx].gstRate=svc.defaultGstRate;
+     if(svc.rate)invForm.lines[idx].rate=svc.rate;
+     drawLines(); redrawTotals(); return;
+    }
+    redrawTotals();
+   });
+   tr.querySelector('.ln-rate').addEventListener('input',(e)=>{invForm.lines[idx].rate=e.target.value;liveRow(tr,idx);});
+   tr.querySelector('.ln-disc').addEventListener('input',(e)=>{invForm.lines[idx].discount=e.target.value;liveRow(tr,idx);});
+   tr.querySelector('.ln-disctype').addEventListener('change',(e)=>{invForm.lines[idx].discountType=e.target.value;liveRow(tr,idx);});
+   tr.querySelector('.ln-gst').addEventListener('change',(e)=>{invForm.lines[idx].gstRate=e.target.value;liveRow(tr,idx);});
+  });
+ }
+ function liveRow(tr,idx){
+  const calc=calcLine(invForm.lines[idx],invForm.gstApplicable,invForm.interState);
+  tr.children[4].textContent=fmtMoney(calc.taxable);
+  tr.children[5].textContent=fmtMoney(calc.lineTotal);
+  redrawTotals();
+ }
+ window.removeInvLine=(idx)=>{
+  if(invForm.lines.length<=1){toast('At least one line is required','err');return;}
+  invForm.lines.splice(idx,1); drawLines(); redrawTotals();
+ };
+ document.getElementById('addLineBtn').addEventListener('click',()=>{invForm.lines.push(blankLine());drawLines();redrawTotals();});
+ document.getElementById('addServiceBtn2').addEventListener('click',()=>{
+  openServiceModal(null,(rec)=>{
+   const emptyIdx=invForm.lines.findIndex(l=>!l.description && !Number(l.rate));
+   const target = emptyIdx>=0 ? invForm.lines[emptyIdx] : (invForm.lines.push(blankLine()), invForm.lines[invForm.lines.length-1]);
+   if(rec){
+    target.serviceId=rec.id; target.description=rec.name; target.sac=rec.sac; target.gstRate=rec.defaultGstRate;
+    if(rec.rate)target.rate=rec.rate;
+   }
+   drawLines(); redrawTotals();
+  });
+ });
+ drawLines();
+
+ function redrawTotals(){
+  const t=calcInvoiceTotals(invForm.lines,invForm.gstApplicable,invForm.interState);
+  const box=document.getElementById('totalsBox');
+  let html='<div class="totals-box">'+
+   '<div class="r"><span>Sub Total</span><span>'+fmtMoney(t.subTotal)+'</span></div>'+
+   (t.discountTotal>0?'<div class="r"><span>Discount</span><span>-'+fmtMoney(t.discountTotal)+'</span></div>':'')+
+   (invForm.gstApplicable?'<div class="r"><span>Taxable Value</span><span>'+fmtMoney(t.taxableTotal)+'</span></div>':'');
+  if(invForm.gstApplicable){
+   if(invForm.interState){html+='<div class="r"><span>IGST</span><span>'+fmtMoney(t.igstTotal)+'</span></div>';}
+   else{html+='<div class="r"><span>CGST</span><span>'+fmtMoney(t.cgstTotal)+'</span></div><div class="r"><span>SGST</span><span>'+fmtMoney(t.sgstTotal)+'</span></div>';}
+  }
+  html+='<div class="r"><span>Round Off</span><span>'+fmtMoney(t.roundOff)+'</span></div>'+
+   '<div class="r grand"><span>Grand Total</span><span>'+fmtMoney(t.grandTotal)+'</span></div>'+
+  '</div>';
+  box.innerHTML=html;
+  const fy=getFY(invForm.invoiceDate);
+  const preview = invForm.invoiceNo ? invForm.invoiceNo : nextInvoiceNumberPreview(fy).invoiceNo+' (provisional)';
+  document.getElementById('invNoPreview').innerHTML='Invoice No: <b>'+esc(preview)+'</b><br>FY: '+esc(fy);
+  return t;
+ }
+ redrawTotals();
+
+ document.getElementById('invoiceNoInp').addEventListener('input',(e)=>{invForm.invoiceNo=e.target.value.trim();invForm.invoiceNoManual=true;redrawTotals();});
+ document.getElementById('invoiceDateInp').addEventListener('change',(e)=>{
+  const oldDate=invForm.invoiceDate;
+  invForm.invoiceDate=e.target.value;
+  if(invForm.periodFromDate && invForm.engagementId && invForm.invoiceDate){
+   const eng=state.engagements.find(x=>x.id===invForm.engagementId);
+   if(eng)invForm.enginePeriodKey=periodKeyForDate(invForm.invoiceDate,eng.frequency).key;
+  }
+  if(invForm.hasDueDate && invForm.dueDate && oldDate && invForm.invoiceDate){
+   const gap=Math.round((parseISO(invForm.dueDate)-parseISO(oldDate))/86400000);
+   invForm.dueDate=addDaysISO(invForm.invoiceDate,gap);
+   document.getElementById('dueDateInp').value=invForm.dueDate;
+  }
+  if(!invForm.invoiceNoManual){
+   document.getElementById('invoiceNoInp').value=nextInvoiceNumberPreview(getFY(invForm.invoiceDate)).invoiceNo;
+  }
+  redrawTotals();
+ });
+ document.getElementById('paymentModeSel').addEventListener('change',(e)=>{invForm.paymentMode=e.target.value;});
+ document.getElementById('amountReceivedInp').addEventListener('input',(e)=>{invForm.amountReceived=e.target.value;});
+ document.getElementById('paymentRefInp').addEventListener('input',(e)=>{invForm.paymentRef=e.target.value;});
+ document.getElementById('notesInp').addEventListener('input',(e)=>{invForm.notes=e.target.value;});
+ document.getElementById('hasDueDateChk').addEventListener('change',(e)=>{
+  invForm.hasDueDate=e.target.checked;
+  const wrap=document.getElementById('dueDateWrap');
+  wrap.style.display=invForm.hasDueDate?'':'none';
+  if(invForm.hasDueDate && !document.getElementById('dueDateInp').value){
+   document.getElementById('dueDateInp').value=addDaysISO(invForm.invoiceDate,state.firm.defaultDueDays||0);
+  }
+  invForm.dueDate=invForm.hasDueDate?document.getElementById('dueDateInp').value:null;
+ });
+ document.getElementById('dueDateInp').addEventListener('change',(e)=>{invForm.dueDate=e.target.value;});
+
+ function validate(){
+  if(!invForm.clientId){toast('Please select a client','err');return false;}
+  const filled=invForm.lines.filter(l=>(l.description||'').trim() || Number(l.rate));
+  if(!filled.length){toast('Add at least one service line with a description and amount','err');return false;}
+  if(filled.some(l=>!(l.description||'').trim())){toast('Every line with an amount needs a description','err');return false;}
+  if(filled.some(l=>!(Number(l.rate)>0))){toast('Every service line needs an amount greater than zero','err');return false;}
+  if(!invForm.invoiceDate){toast('Enter the invoice date','err');return false;}
+  if(invForm.hasDueDate && invForm.dueDate && invForm.dueDate<invForm.invoiceDate){toast('Due date cannot be before the invoice date','err');return false;}
+  if(filled.length!==invForm.lines.length){invForm.lines=filled;drawLines();redrawTotals();}
+  return true;
+ }
+ function buildInvoiceObject(t, statusOverride){
+  const client=state.clients.find(c=>c.id===invForm.clientId);
+  const prev=state.invoices.find(i=>i.id===invForm.id);
+  const prevReceived=prev?(prev.amountReceived||0):0;
+  const amt=prevReceived>0?prevReceived:(Number(invForm.amountReceived)||0);
+  const payments=prevReceived>0?(prev.payments||[]):(amt>0?[{date:todayISO(),amount:amt,mode:invForm.paymentMode,reference:invForm.paymentRef}]:[]);
+  return {
+   id: invForm.id || uid(),
+   invoiceNo: invForm.invoiceNo || null,
+   invoiceDate: invForm.invoiceDate, fy: getFY(invForm.invoiceDate),
+   clientId: invForm.clientId, clientSnapshot: Object.assign({},client),
+   firmSnapshot: Object.assign({},state.firm),
+   lines: t.lines, gstApplicable: invForm.gstApplicable, interState: invForm.interState,
+   subTotal: t.subTotal, discountTotal: t.discountTotal, taxableTotal: t.taxableTotal,
+   cgstTotal: t.cgstTotal, sgstTotal: t.sgstTotal, igstTotal: t.igstTotal, roundOff: t.roundOff, grandTotal: t.grandTotal,
+   amountInWords: amountInWords(t.grandTotal),
+   paymentMode: invForm.paymentMode, status: statusOverride || invForm.status,
+   payments,
+   amountReceived: amt,
+   notes: invForm.notes,
+   dueDate: invForm.hasDueDate ? (invForm.dueDate||null) : null,
+   engagementId: invForm.engagementId||null,
+   enginePeriodKey: invForm.enginePeriodKey||null,
+   createdAt: (state.invoices.find(i=>i.id===invForm.id)||{}).createdAt || Date.now(),
+   updatedAt: Date.now()
+  };
+ }
+ async function saveInvoice(finalize){
+  if(!validate())return null;
+  const t=calcInvoiceTotals(invForm.lines,invForm.gstApplicable,invForm.interState);
+  const issuing = finalize || (invForm.status && invForm.status!=='Draft');
+  let seqInfo=null, number=invForm.invoiceNo||null;
+  if(issuing && !number){
+   seqInfo=nextInvoiceNumberPreview(getFY(invForm.invoiceDate));
+   number=seqInfo.invoiceNo;
+  }
+  const dup=number && state.invoices.find(i=>i.invoiceNo===number && i.id!==invForm.id);
+  if(dup){
+   const clientNm=(dup.clientSnapshot&&dup.clientSnapshot.name)||'a client';
+   const proceed=await confirmAsync('Duplicate Invoice Number','Invoice number "'+number+'" is already used by another invoice for '+clientNm+' dated '+fmtDate(dup.invoiceDate)+'. Continue anyway?','Continue Anyway');
+   if(!proceed)return null;
+  }
+  const rec=buildInvoiceObject(t, issuing?(finalize&&invForm.status==='Draft'?'Issued':(invForm.status||'Issued')):'Draft');
+  rec.invoiceNo=number;
+  if(rec.status!=='Cancelled' && rec.status!=='Draft') rec.status=derivePaidStatus(rec);
+  await dbPut('invoices',rec);
+  if(seqInfo)await commitInvoiceNumber(rec.fy,seqInfo.seq);
+  const idx=state.invoices.findIndex(i=>i.id===rec.id);
+  if(idx>=0)state.invoices[idx]=rec; else state.invoices.push(rec);
+  invForm.id=rec.id; invForm.status=rec.status; invForm.invoiceNo=number;
+  if(rec.engagementId && rec.enginePeriodKey){
+   const eng=state.engagements.find(e=>e.id===rec.engagementId);
+   if(eng){eng.lastGeneratedPeriod=rec.enginePeriodKey; await dbPut('engagements',eng);}
+  }
+  return rec;
+ }
+ document.getElementById('saveDraftBtn').addEventListener('click',async()=>{
+  const rec=await saveInvoice(false);
+  if(rec){toast(rec.status==='Draft'?'Draft saved':'Invoice updated','ok');navigate('invoice/view/'+rec.id);}
+ });
+ const generateBtn=document.getElementById('generateBtn');
+ if(generateBtn)generateBtn.addEventListener('click',async()=>{
+  const rec=await saveInvoice(true);
+  if(rec){toast('Invoice generated','ok');navigate('invoice/view/'+rec.id);}
+ });
+ document.getElementById('previewBtn').addEventListener('click',()=>{
+  if(!validate())return;
+  const t=calcInvoiceTotals(invForm.lines,invForm.gstApplicable,invForm.interState);
+  const tmp=buildInvoiceObject(t,invForm.status);
+  tmp.invoiceNo = invForm.invoiceNo || nextInvoiceNumberPreview(getFY(invForm.invoiceDate)).invoiceNo+' (provisional)';
+  openModal('<div class="modal-head"><h3>Invoice Preview</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>'+
+   '<div style="max-height:70vh;overflow:auto;border:1px solid var(--border);border-radius:8px;">'+renderInvoiceHTML(tmp)+'</div>','wide');
+ });
+}
+
+/* ============ INVOICE HTML TEMPLATE (shared by preview / view / print) ============ */
+function renderInvoiceHTML(inv){
+ const f=inv.firmSnapshot||state.firm;
+ const c=inv.clientSnapshot||{};
+ const title = inv.gstApplicable ? 'TAX INVOICE' : 'INVOICE';
+ const showTaxable = !!inv.gstApplicable;
+ const hasDiscount = inv.lines.some(l=>(l.discountAmt||0)>0.004);
+ const linesHtml=inv.lines.map((l,i)=>
+  '<tr><td>'+(i+1)+'</td><td>'+esc(l.description||'')+(inv.gstApplicable&&l.sac?'<br><span style="color:#888;">SAC: '+esc(l.sac)+'</span>':'')+'</td>'+
+  (hasDiscount?'<td class="num">'+(l.discountAmt?fmtMoney(l.discountAmt):'-')+'</td>':'')+
+  (showTaxable?'<td class="num">'+fmtMoney(l.taxable)+'</td>':'')+
+  (inv.gstApplicable? (inv.interState? '<td class="num">'+fmtMoney(l.igst)+'</td>' : '<td class="num">'+fmtMoney(l.cgst)+' + '+fmtMoney(l.sgst)+'</td>') : '')+
+  '<td class="num">'+fmtMoney(l.lineTotal)+'</td></tr>'
+ ).join('');
+ const gstCols = inv.gstApplicable ? (inv.interState?'<th class="num">IGST</th>':'<th class="num">CGST+SGST</th>') : '';
+ const bal = inv.grandTotal - inv.amountReceived;
+ return '<div class="inv-doc">'+
+  '<div class="inv-head">'+
+   '<div class="firm-block">'+(f.logoDataUrl?'<img class="logo" src="'+f.logoDataUrl+'">':'')+
+    '<div><div class="fn">'+esc(f.name||'Firm Name')+'</div><div class="fmeta">'+esc(f.address||'')+'<br>'+
+     (f.gstin?'<b>GSTIN:</b> '+esc(f.gstin)+'<br>':'')+(f.pan?'<b>PAN:</b> '+esc(f.pan)+'<br>':'')+
+     (f.phone?'<b>Ph:</b> '+esc(f.phone):'')+(f.phone&&f.email?'<br>':'')+(f.email?'<b>Email:</b> '+esc(f.email):'')+'</div></div>'+
+   '</div>'+
+   '<div class="inv-title-block"><div class="tt">'+title+'</div>'+
+    '<div class="meta"><b>Invoice No:</b> '+esc(invNoLabel(inv))+'<br><b>Date:</b> '+fmtDate(inv.invoiceDate)+'<br><b>FY:</b> '+esc(inv.fy)+(inv.dueDate?'<br><b>Due Date:</b> '+fmtDate(inv.dueDate):'')+'</div></div>'+
+  '</div>'+
+  '<div class="inv-parties">'+
+   '<div class="blk"><h4>Billed To</h4><div class="nm">'+esc(c.name||'')+'</div>'+esc(c.billingAddress||'')+'<br>'+
+    (c.gstin?'<b>GSTIN:</b> '+esc(c.gstin)+'<br>':'')+(c.pan?'<b>PAN:</b> '+esc(c.pan)+'<br>':'')+'<b>State:</b> '+esc(c.stateName||'')+(c.stateCode?' ('+esc(c.stateCode)+')':'')+'<br>'+
+    (c.mobile?'<b>Mobile:</b> '+esc(c.mobile):'')+(c.mobile&&c.email?'<br>':'')+(c.email?'<b>Email:</b> '+esc(c.email):'')+'</div>'+
+   '<div class="blk"><h4>Payment Details</h4>'+
+    (f.bankName?'<b>Bank:</b> '+esc(f.bankName)+'<br>':'')+(f.accountNumber?'<b>A/c No:</b> '+esc(f.accountNumber)+'<br>':'')+(f.ifsc?'<b>IFSC:</b> '+esc(f.ifsc)+'<br>':'')+(f.branch?'<b>Branch:</b> '+esc(f.branch)+'<br>':'')+
+    (f.upi?'<b>UPI ID:</b> '+esc(f.upi)+'<br>':'')+
+    ((!f.bankName && !f.upi)?'<span style="color:#999;">No payment details on file</span>':'')+
+   '</div>'+
+  '</div>'+
+  '<table class="items"><thead><tr><th>#</th><th>Description</th>'+(hasDiscount?'<th class="num">Discount</th>':'')+(showTaxable?'<th class="num">Taxable</th>':'')+gstCols+'<th class="num">Total</th></tr></thead><tbody>'+linesHtml+'</tbody></table>'+
+  '<div class="inv-foot-grid">'+
+   '<div class="inv-words"><b>Amount in Words</b>'+esc(inv.amountInWords)+'</div>'+
+   '<div class="inv-totals">'+
+    '<div class="r"><span>Sub Total</span><span>'+fmtMoney(inv.subTotal)+'</span></div>'+
+    (inv.discountTotal>0?'<div class="r"><span>Discount</span><span>-'+fmtMoney(inv.discountTotal)+'</span></div>':'')+
+    (showTaxable?'<div class="r"><span>Taxable Value</span><span>'+fmtMoney(inv.taxableTotal)+'</span></div>':'')+
+    (inv.gstApplicable? (inv.interState? '<div class="r"><span>IGST</span><span>'+fmtMoney(inv.igstTotal)+'</span></div>' : '<div class="r"><span>CGST</span><span>'+fmtMoney(inv.cgstTotal)+'</span></div><div class="r"><span>SGST</span><span>'+fmtMoney(inv.sgstTotal)+'</span></div>') : '')+
+    '<div class="r"><span>Round Off</span><span>'+fmtMoney(inv.roundOff)+'</span></div>'+
+    '<div class="r grand"><span>Grand Total</span><span>'+fmtMoney(inv.grandTotal)+'</span></div>'+
+    '<div class="r"><span>Amount Received</span><span>'+fmtMoney(inv.amountReceived)+'</span></div>'+
+    '<div class="r"><span>Balance Due</span><span>'+fmtMoney(bal)+'</span></div>'+
+   '</div>'+
+  '</div>'+
+  '<div class="inv-terms">'+esc(inv.notes||'')+'</div>'+
+  '<div class="inv-bottom"><div class="bank"><b>Notes</b>Thank you for your business.</div>'+
+   '<div class="inv-sign">'+
+    '<div class="sig-block">'+
+     '<div class="for-firm">For '+esc(f.name||'')+'</div>'+
+     (f.signatureDataUrl?'<img class="sig-img" src="'+f.signatureDataUrl+'">':'<div class="sig-space"></div>')+
+     '<div class="sig-line">'+esc(f.signatoryName||f.signatoryDesignation||'Authorised Signatory')+'</div>'+
+     (f.signatoryName?'<div class="sig-role">'+esc(f.signatoryDesignation||'Authorised Signatory')+'</div>':'')+
+    '</div>'+
+   '</div></div>'+
+ '</div>';
+}
+
+/* ============ INVOICE VIEW PAGE ============ */
+function renderInvoiceView(app, id){
+ const inv=state.invoices.find(i=>i.id===id);
+ if(!inv){app.innerHTML='<div class="empty-state">Invoice not found.</div>';return;}
+ const outstanding=isOutstanding(inv);
+ const isDraft=inv.status==='Draft';
+ const c=inv.clientSnapshot||{};
+ const pays=paymentsOf(inv);
+ const payHtml=pays.length?
+  '<div class="card" style="margin-top:16px;"><h3>Payment History</h3><div class="tbl-wrap"><table class="pay-hist"><thead><tr><th>Date</th><th class="num">Amount</th><th>Mode</th><th>Reference</th><th>Remarks</th><th></th></tr></thead><tbody>'+
+  pays.map((p,idx)=>'<tr><td>'+fmtDate(p.date)+'</td><td class="num">'+fmtMoney(p.amount)+'</td><td>'+esc(p.mode||'')+'</td><td>'+esc(p.reference||'')+'</td><td>'+esc(p.remarks||'')+'</td>'+
+   '<td class="actions-cell">'+(inv.status!=='Cancelled'?'<span class="icon-link danger" data-delpay="'+idx+'">Delete</span>':'')+'</td></tr>').join('')+
+  '</tbody></table></div></div>' : '';
+ app.innerHTML=
+ '<div class="toolbar between">'+
+  '<div class="row">'+statusBadge(inv.status)+(isOverdue(inv)?'<span class="badge badge-cancelled">Overdue</span>':'')+'<span style="color:var(--text-dim);font-size:12.5px;">'+esc(invNoLabel(inv))+' &middot; '+fmtDate(inv.invoiceDate)+(inv.dueDate?' &middot; Due '+fmtDate(inv.dueDate):'')+'</span></div>'+
+  '<div class="row">'+
+   (isDraft ? '<button class="btn btn-sm btn-gold" id="issueInvBtn">Issue Invoice</button>' : '')+
+   '<button class="btn btn-sm btn-primary" id="pdfBtn">Download PDF</button>'+
+   '<button class="btn btn-sm" id="printBtn">Print</button>'+
+   '<button class="btn btn-sm" id="docxBtn">Download Word (.docx)</button>'+
+   (inv.status!=='Cancelled' ? '<button class="btn btn-sm" id="editInvBtn">Edit</button>' : '')+
+   '<button class="btn btn-sm" id="dupInvBtn">Duplicate</button>'+
+   (outstanding ? '<button class="btn btn-sm" id="recPayBtn">Record Payment</button>' : '')+
+   (outstanding && c.mobile ? '<button class="btn btn-sm" id="waReminderBtn">WhatsApp Reminder</button>' : '')+
+   (outstanding && c.email ? '<button class="btn btn-sm" id="emailReminderBtn">Email Reminder</button>' : '')+
+   (isBilled(inv) ? '<button class="btn btn-sm btn-danger" id="cancelInvBtn">Cancel</button>' : '')+
+   (inv.status==='Cancelled' ? '<button class="btn btn-sm btn-gold" id="restoreInvBtn">Restore</button>' : '')+
+   (isDraft||inv.status==='Cancelled' ? '<button class="btn btn-sm btn-danger" id="deleteInvBtn">Delete</button>' : '')+
+  '</div>'+
+ '</div>'+
+ (isDraft?'<div class="hint" style="margin:-4px 0 12px;">Draft — no invoice number is used until you issue it. Drafts are not counted in billing or outstanding.</div>':'')+
+ '<div class="card" style="padding:0;overflow:hidden;">'+renderInvoiceHTML(inv)+'</div>'+payHtml;
+
+ const issueBtn=document.getElementById('issueInvBtn');
+ if(issueBtn)issueBtn.addEventListener('click',async()=>{
+  const fy=getFY(inv.invoiceDate);
+  const seqInfo=inv.invoiceNo?null:nextInvoiceNumberPreview(fy);
+  const number=inv.invoiceNo||seqInfo.invoiceNo;
+  const dup=state.invoices.find(i=>i.invoiceNo===number && i.id!==inv.id);
+  const ok=await confirmAsync('Issue Invoice',
+   'Invoice number '+number+' will be assigned, dated '+fmtDate(inv.invoiceDate)+'. Once issued, the invoice can only be cancelled, not deleted.'+(inv.invoiceDate<todayISO()?' To change the date, use Edit first.':'')+(dup?' Warning: this number is already used by another invoice.':''),
+   'Issue Invoice');
+  if(!ok)return;
+  inv.invoiceNo=number; inv.fy=fy;
+  inv.status=derivePaidStatus(inv);
+  inv.updatedAt=Date.now();
+  await dbPut('invoices',inv);
+  if(seqInfo)await commitInvoiceNumber(fy,seqInfo.seq);
+  toast('Invoice '+number+' issued','ok'); renderRoute();
+ });
+ app.querySelectorAll('[data-delpay]').forEach(el=>el.addEventListener('click',()=>{
+  const idx=Number(el.dataset.delpay);
+  const p=pays[idx];
+  confirmDialog('Delete Payment','Remove the payment of '+fmtMoney(p.amount)+' dated '+fmtDate(p.date)+' from this invoice? The balance will be recalculated.','Delete Payment',async()=>{
+   const list=paymentsOf(inv);
+   list.splice(idx,1);
+   inv.payments=list;
+   inv.amountReceived=round2(list.reduce((s,x)=>s+Number(x.amount),0));
+   if(isBilled(inv))inv.status=derivePaidStatus(inv);
+   inv.updatedAt=Date.now();
+   await dbPut('invoices',inv);
+   toast('Payment deleted','ok'); renderRoute();
+  });
+ }));
+
+ document.getElementById('pdfBtn').addEventListener('click',()=>downloadInvoicePdf(inv));
+ document.getElementById('printBtn').addEventListener('click',()=>printInvoice(inv));
+ document.getElementById('docxBtn').addEventListener('click',()=>downloadInvoiceDocx(inv));
+ const editBtn=document.getElementById('editInvBtn'); if(editBtn)editBtn.addEventListener('click',()=>navigate('invoice/edit/'+inv.id));
+ const waBtn=document.getElementById('waReminderBtn'); if(waBtn)waBtn.addEventListener('click',()=>sendReminderWhatsApp(inv));
+ const emBtn=document.getElementById('emailReminderBtn'); if(emBtn)emBtn.addEventListener('click',()=>sendReminderEmail(inv));
+ document.getElementById('dupInvBtn').addEventListener('click',()=>{
+  duplicateSource={id:null,clientId:inv.clientId,invoiceDate:todayISO(),lines:inv.lines.map(l=>({id:uid(),serviceId:l.serviceId,description:l.description,sac:l.sac,rate:l.rate,discount:l.discount,discountType:l.discountType,gstRate:l.gstRate})),
+   gstApplicable:inv.gstApplicable,interState:inv.interState,paymentMode:inv.paymentMode,status:'Draft',amountReceived:0,paymentRef:'',notes:inv.notes,
+   hasDueDate:false,dueDate:null,engagementId:null,enginePeriodKey:null};
+  navigate('invoice/new');
+  toast('Duplicated — review and generate');
+ });
+ const cancelBtn=document.getElementById('cancelInvBtn');
+ if(cancelBtn)cancelBtn.addEventListener('click',()=>{
+  confirmDialog('Cancel Invoice','This will mark the invoice as Cancelled. The invoice number is retained for audit trail. Continue?','Cancel Invoice',async()=>{
+   inv.status='Cancelled'; inv.updatedAt=Date.now();
+   await dbPut('invoices',inv);
+   toast('Invoice cancelled'); renderRoute();
+  });
+ });
+ const recPayBtn=document.getElementById('recPayBtn');
+ if(recPayBtn)recPayBtn.addEventListener('click',()=>openPaymentModal(inv));
+ const restoreBtn=document.getElementById('restoreInvBtn');
+ if(restoreBtn)restoreBtn.addEventListener('click',()=>{
+  confirmDialog('Restore Invoice','This will restore invoice '+invNoLabel(inv)+' and allow it to be edited again. Continue?','Restore',async()=>{
+   inv.status = inv.invoiceNo ? derivePaidStatus(inv) : 'Draft';
+   inv.updatedAt=Date.now();
+   await dbPut('invoices',inv);
+   toast('Invoice restored','ok'); renderRoute();
+  });
+ });
+ const deleteBtn=document.getElementById('deleteInvBtn');
+ if(deleteBtn)deleteBtn.addEventListener('click',()=>{
+  confirmDialog('Delete Invoice','This will permanently delete '+(inv.invoiceNo?'invoice '+inv.invoiceNo:'this draft')+' from the register. This cannot be undone. Continue?','Delete',async()=>{
+   await dbDelete('invoices',inv.id);
+   state.invoices=state.invoices.filter(i=>i.id!==inv.id);
+   toast('Invoice deleted');
+   navigate('invoices');
+  });
+ });
+}
+function openPaymentModal(inv){
+ const bal=round2(inv.grandTotal-inv.amountReceived);
+ openModal('<div class="modal-head"><h3>Record Payment</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>'+
+ '<form id="payForm">'+
+  '<div class="hint" style="margin-bottom:10px;">Outstanding balance: <b>'+fmtMoney(bal)+'</b></div>'+
+  '<div class="grid g2">'+field('payAmt','Amount Received',bal,'number')+field('payDate','Payment Date',todayISO(),'date')+'</div>'+
+  '<div class="grid g2">'+select('payMode','Mode',PAYMENT_MODES,inv.paymentMode)+field('payRef','Reference No.','')+'</div>'+
+  field('payRemarks','Remarks (optional)','')+
+  '<div class="row" style="justify-content:flex-end;"><button type="button" class="btn" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-primary">Save Payment</button></div>'+
+ '</form>');
+ document.getElementById('payForm').addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const fd=formValues(e.target);
+  const amt=Number(fd.payAmt)||0;
+  if(amt<=0){toast('Enter a valid amount','err');return;}
+  if(!fd.payDate){toast('Enter the payment date','err');return;}
+  if(fd.payDate>todayISO()){toast('Payment date cannot be in the future','err');return;}
+  if(amt>bal+0.004){
+   const proceed=await confirmAsync('Amount Exceeds Balance','This payment of '+fmtMoney(amt)+' is more than the outstanding balance of '+fmtMoney(bal)+'. Record it anyway as an advance?','Record Anyway');
+   if(!proceed)return;
+  }
+  inv.payments=paymentsOf(inv);
+  inv.payments.push({date:fd.payDate,amount:amt,mode:fd.payMode,reference:fd.payRef,remarks:fd.payRemarks});
+  inv.amountReceived=round2(inv.payments.reduce((s,x)=>s+Number(x.amount),0));
+  inv.status=derivePaidStatus(inv);
+  inv.updatedAt=Date.now();
+  await dbPut('invoices',inv);
+  closeModal(); toast('Payment recorded','ok'); renderRoute();
+ });
+}
+
+/* ============ RETROSPECTIVE GST REVIEW ============ */
+async function applyGstToInvoice(id, includeGst){
+ const inv=state.invoices.find(i=>i.id===id);
+ if(!inv)return;
+ inv.gstApplicable=!!includeGst;
+ if(inv.gstApplicable){
+  inv.firmSnapshot=Object.assign({},state.firm);
+  inv.interState=!!(inv.clientSnapshot && inv.clientSnapshot.stateCode && state.firm.stateCode && inv.clientSnapshot.stateCode!==state.firm.stateCode);
+ }
+ const t=calcInvoiceTotals(inv.lines, inv.gstApplicable, inv.interState);
+ inv.lines=t.lines; inv.subTotal=t.subTotal; inv.discountTotal=t.discountTotal; inv.taxableTotal=t.taxableTotal;
+ inv.cgstTotal=t.cgstTotal; inv.sgstTotal=t.sgstTotal; inv.igstTotal=t.igstTotal; inv.roundOff=t.roundOff; inv.grandTotal=t.grandTotal;
+ inv.amountInWords=amountInWords(t.grandTotal);
+ if(isBilled(inv))inv.status=derivePaidStatus(inv);
+ inv.updatedAt=Date.now();
+ await dbPut('invoices',inv);
+ const idx=state.invoices.findIndex(x=>x.id===inv.id);
+ if(idx>=0)state.invoices[idx]=inv;
+}
+function openRetroGstReview(){
+ const cutoff=daysAgoISO(30);
+ const list=state.invoices.filter(i=>i.invoiceDate>=cutoff).sort((a,b)=>b.invoiceDate.localeCompare(a.invoiceDate));
+ if(!list.length){toast('No invoices in the last 30 days to review','ok');return;}
+ openModal(
+  '<div class="modal-head"><h3>Update GST on Recent Invoices</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>'+
+  '<p class="hint" style="margin-bottom:12px;">Invoices dated within the last 30 days. Decide whether each should include GST — one at a time, or select several and apply in bulk. Changes save immediately and recalculate totals.</p>'+
+  '<div class="toolbar between" style="margin-bottom:10px;">'+
+   '<label class="chk-row"><input type="checkbox" id="retroSelectAll"> Select All</label>'+
+   '<div class="row" style="gap:8px;">'+
+    '<button type="button" class="btn btn-sm btn-gold" id="retroBulkYes">Include GST (Selected)</button>'+
+    '<button type="button" class="btn btn-sm" id="retroBulkNo">Exclude GST (Selected)</button>'+
+   '</div>'+
+  '</div>'+
+  '<div class="tbl-wrap" style="max-height:50vh;overflow:auto;"><table><thead><tr><th></th><th>Invoice No.</th><th>Date</th><th>Client</th><th class="num">Grand Total</th><th>GST</th><th></th></tr></thead><tbody id="retroRows"></tbody></table></div>'+
+  '<div class="row" style="justify-content:flex-end;margin-top:14px;"><button type="button" class="btn btn-primary" onclick="closeModal()">Done</button></div>',
+  true
+ );
+ function draw(){
+  const tbody=document.getElementById('retroRows');
+  tbody.innerHTML=list.map(row=>{
+   const i=state.invoices.find(x=>x.id===row.id)||row;
+   return '<tr data-id="'+i.id+'"><td><input type="checkbox" class="retroChk"></td>'+
+    '<td><b>'+esc(invNoLabel(i))+'</b></td><td>'+fmtDate(i.invoiceDate)+'</td><td>'+esc(clientName(i))+'</td>'+
+    '<td class="num">'+fmtMoney(i.grandTotal)+'</td>'+
+    '<td>'+(i.gstApplicable?'<span class="badge badge-paid">Includes GST</span>':'<span class="badge badge-draft">No GST</span>')+'</td>'+
+    '<td class="actions-cell">'+
+     '<span class="icon-link" onclick="applyGstToInvoiceUI(\''+i.id+'\',true)">Include</span>'+
+     '<span class="icon-link danger" onclick="applyGstToInvoiceUI(\''+i.id+'\',false)">Exclude</span>'+
+    '</td></tr>';
+  }).join('');
+  const selectAll=document.getElementById('retroSelectAll');
+  if(selectAll)selectAll.checked=false;
+ }
+ draw();
+ window.applyGstToInvoiceUI=async(id,include)=>{
+  await applyGstToInvoice(id,include);
+  draw();
+  toast('Invoice updated','ok');
+ };
+ document.getElementById('retroSelectAll').addEventListener('change',(e)=>{
+  document.querySelectorAll('.retroChk').forEach(c=>{c.checked=e.target.checked;});
+ });
+ function selectedIds(){
+  return [...document.querySelectorAll('#retroRows tr')].filter(tr=>tr.querySelector('.retroChk').checked).map(tr=>tr.dataset.id);
+ }
+ document.getElementById('retroBulkYes').addEventListener('click',async()=>{
+  const ids=selectedIds();
+  if(!ids.length){toast('Select at least one invoice','err');return;}
+  for(const id of ids)await applyGstToInvoice(id,true);
+  draw();
+  toast(ids.length+' invoice(s) updated to include GST','ok');
+ });
+ document.getElementById('retroBulkNo').addEventListener('click',async()=>{
+  const ids=selectedIds();
+  if(!ids.length){toast('Select at least one invoice','err');return;}
+  for(const id of ids)await applyGstToInvoice(id,false);
+  draw();
+  toast(ids.length+' invoice(s) updated to exclude GST','ok');
+ });
+}
+
+/* ============ PRINT ============ */
+function printInvoice(inv){
+ document.getElementById('printArea').innerHTML=renderInvoiceHTML(inv);
+ window.print();
+}
+
+/* ============ INVOICE REGISTER ============ */
+function renderInvoiceRegister(app){
+ let filters={q:'',client:'',fy:'',status:'',service:''};
+ const fyList=Array.from(new Set(state.invoices.map(i=>i.fy))).sort().reverse();
+ app.innerHTML=
+ '<div class="toolbar">'+
+  '<input type="text" id="regSearch" placeholder="Search invoice no. / client...">'+
+  '<select id="regFy"><option value="">All FY</option>'+fyList.map(f=>'<option value="'+f+'">'+f+'</option>').join('')+'</select>'+
+  '<select id="regStatus"><option value="">All Status</option>'+INVOICE_STATUSES.map(s=>'<option value="'+s+'">'+s+'</option>').join('')+'</select>'+
+  '<button class="btn btn-sm" id="exportCsvBtn">Export CSV</button>'+
+ '</div>'+
+ '<div class="tbl-wrap"><table><thead><tr><th>Invoice No.</th><th>Date</th><th>Client</th><th>Service</th><th class="num">Taxable</th><th class="num">GST</th><th class="num">Invoice Value</th><th class="num">Received</th><th class="num">Outstanding</th><th>Status</th><th></th></tr></thead><tbody id="regRows"></tbody></table></div>';
+
+ function filteredRows(){
+  const q=(filters.q||'').toLowerCase();
+  return state.invoices.filter(i=>
+   (!q || (i.invoiceNo||'').toLowerCase().includes(q) || clientName(i).toLowerCase().includes(q)) &&
+   (!filters.fy || i.fy===filters.fy) &&
+   (!filters.status || i.status===filters.status)
+  ).sort((a,b)=>b.createdAt-a.createdAt);
+ }
+ function draw(){
+  const rows=filteredRows();
+  const tbody=document.getElementById('regRows');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="11"><div class="empty-state">No invoices found.</div></td></tr>';return;}
+  tbody.innerHTML=rows.map(i=>{
+   const gst=round2((i.cgstTotal||0)+(i.sgstTotal||0)+(i.igstTotal||0));
+   const outstanding=round2(i.grandTotal-i.amountReceived);
+   const svcNames=(i.lines||[]).map(l=>l.description).filter(Boolean).slice(0,2).join(', ');
+   return '<tr><td><a onclick="navigate(\'invoice/view/'+i.id+'\')" style="cursor:pointer;font-weight:700;">'+esc(invNoLabel(i))+'</a></td>'+
+    '<td>'+fmtDate(i.invoiceDate)+'</td><td>'+esc(clientName(i))+'</td><td style="max-width:180px;">'+esc(svcNames)+'</td>'+
+    '<td class="num">'+fmtMoney(i.taxableTotal)+'</td><td class="num">'+fmtMoney(gst)+'</td><td class="num">'+fmtMoney(i.grandTotal)+'</td>'+
+    '<td class="num">'+fmtMoney(i.amountReceived)+'</td><td class="num">'+fmtMoney(outstanding)+'</td><td>'+statusBadge(i.status)+'</td>'+
+    '<td class="actions-cell"><span class="icon-link" onclick="navigate(\'invoice/view/'+i.id+'\')">View</span></td></tr>';
+  }).join('');
+ }
+ draw();
+ document.getElementById('regSearch').addEventListener('input',debounce(e=>{filters.q=e.target.value;draw();},120));
+ document.getElementById('regFy').addEventListener('change',e=>{filters.fy=e.target.value;draw();});
+ document.getElementById('regStatus').addEventListener('change',e=>{filters.status=e.target.value;draw();});
+ document.getElementById('exportCsvBtn').addEventListener('click',()=>exportRegisterCsv(filteredRows()));
+}
+function exportRegisterCsv(list){
+ const header=['Invoice No','Date','Client','Service','GSTIN','Taxable Value','CGST','SGST','IGST','Invoice Value','Amount Received','Outstanding','Status'];
+ const rows=(Array.isArray(list)?list:state.invoices).map(i=>{
+  const services=(i.lines||[]).map(l=>l.description).filter(Boolean).join('; ');
+  return [invNoLabel(i),i.invoiceDate,clientName(i),services,(i.clientSnapshot||{}).gstin||'',i.taxableTotal,i.cgstTotal,i.sgstTotal,i.igstTotal,i.grandTotal,i.amountReceived,round2(i.grandTotal-i.amountReceived),i.status];
+ });
+ const csv=[header].concat(rows).map(r=>r.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8;'}), 'InvoiceRegister_'+todayISO()+'.csv');
+}
+function downloadBlob(blob,filename){
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a'); a.href=url; a.download=filename;
+ document.body.appendChild(a); a.click(); a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+/* ============ COLLECTIONS CENTRE ============ */
+function renderCollections(app){
+ let filters={status:'outstanding',client:'',fy:''};
+ const fyList=Array.from(new Set(state.invoices.map(i=>i.fy))).sort().reverse();
+ const clientOptions=state.clients.slice().sort((a,b)=>a.name.localeCompare(b.name));
+ app.innerHTML=
+ '<div id="ageingCards" class="grid g4" style="margin-bottom:16px;"></div>'+
+ '<div class="toolbar">'+
+  '<select id="colStatus"><option value="outstanding">All Outstanding</option><option value="partly">Partly Paid</option><option value="unpaid">Unpaid</option><option value="overdue">Overdue</option></select>'+
+  '<select id="colClient"><option value="">All Clients</option>'+clientOptions.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('')+'</select>'+
+  '<select id="colFy"><option value="">All FY</option>'+fyList.map(f=>'<option value="'+f+'">'+f+'</option>').join('')+'</select>'+
+ '</div>'+
+ '<div class="tbl-wrap"><table><thead><tr><th>Client</th><th>Invoice</th><th>Invoice Date</th><th>Due Date</th><th class="num">Amount</th><th class="num">Received</th><th class="num">Balance</th><th>Age</th><th>Status</th><th></th></tr></thead><tbody id="colRows"></tbody></table></div>';
+
+ function baseOutstanding(){return state.invoices.filter(isOutstanding);}
+ function drawAgeing(){
+  const list=baseOutstanding();
+  const buckets={'0-30 Days':0,'31-60 Days':0,'61-90 Days':0,'Above 90 Days':0};
+  list.forEach(i=>{buckets[ageingBucket(ageInDays(i.invoiceDate))]+=invoiceBalance(i);});
+  document.getElementById('ageingCards').innerHTML=Object.keys(buckets).map(k=>statCard(k,fmtMoney(buckets[k]),'')).join('');
+ }
+ function draw(){
+  let rows=baseOutstanding();
+  if(filters.status==='partly')rows=rows.filter(i=>i.status==='Partly Paid');
+  else if(filters.status==='unpaid')rows=rows.filter(i=>(i.amountReceived||0)<=0.004);
+  else if(filters.status==='overdue')rows=rows.filter(isOverdue);
+  if(filters.client)rows=rows.filter(i=>i.clientId===filters.client);
+  if(filters.fy)rows=rows.filter(i=>i.fy===filters.fy);
+  rows=rows.slice().sort((a,b)=>a.invoiceDate.localeCompare(b.invoiceDate));
+  const tbody=document.getElementById('colRows');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state">Nothing to collect here.</div></td></tr>';return;}
+  tbody.innerHTML=rows.map(i=>{
+   const bal=invoiceBalance(i);
+   const age=ageInDays(i.invoiceDate);
+   const overdue=isOverdue(i);
+   const c=i.clientSnapshot||{};
+   return '<tr><td>'+esc(clientName(i))+'</td>'+
+    '<td><a onclick="navigate(\'invoice/view/'+i.id+'\')" style="cursor:pointer;font-weight:700;">'+esc(i.invoiceNo)+'</a></td>'+
+    '<td>'+fmtDate(i.invoiceDate)+'</td>'+
+    '<td>'+(i.dueDate?fmtDate(i.dueDate):'-')+(overdue?' <span class="badge badge-cancelled">Overdue</span>':'')+'</td>'+
+    '<td class="num">'+fmtMoney(i.grandTotal)+'</td><td class="num">'+fmtMoney(i.amountReceived)+'</td><td class="num">'+fmtMoney(bal)+'</td>'+
+    '<td>'+ageingBadge(age)+'</td><td>'+statusBadge(i.status)+'</td>'+
+    '<td class="actions-cell">'+
+     '<span class="icon-link" onclick="openPaymentModalById(\''+i.id+'\')">Record Payment</span>'+
+     (c.mobile?'<span class="icon-link" onclick="sendReminderWhatsApp(state.invoices.find(x=>x.id===\''+i.id+'\'))">WhatsApp</span>':'')+
+     (c.email?'<span class="icon-link" onclick="sendReminderEmail(state.invoices.find(x=>x.id===\''+i.id+'\'))">Email</span>':'')+
+    '</td></tr>';
+  }).join('');
+ }
+ drawAgeing(); draw();
+ document.getElementById('colStatus').addEventListener('change',e=>{filters.status=e.target.value;draw();});
+ document.getElementById('colClient').addEventListener('change',e=>{filters.client=e.target.value;draw();});
+ document.getElementById('colFy').addEventListener('change',e=>{filters.fy=e.target.value;draw();});
+}
+
+/* ============ CLIENT LEDGER ============ */
+function renderClientLedger(app,clientId){
+ const client=state.clients.find(c=>c.id===clientId);
+ if(!client){app.innerHTML='<div class="empty-state">Client not found.</div>';return;}
+ const invoices=state.invoices.filter(i=>i.clientId===clientId);
+ const active=invoices.filter(isBilled);
+ const totalBilled=round2(active.reduce((s,i)=>s+(i.grandTotal||0),0));
+ const totalReceived=round2(active.reduce((s,i)=>s+(i.amountReceived||0),0));
+ const outstanding=round2(totalBilled-totalReceived);
+ const openCount=active.filter(isOutstanding).length;
+
+ let entries=[];
+ active.forEach(i=>{
+  entries.push({date:i.invoiceDate,particulars:'Invoice '+i.invoiceNo,invoiceId:i.id,debit:i.grandTotal,credit:0,sortKey:i.invoiceDate+'_0'});
+  paymentsOf(i).forEach(p=>{
+   entries.push({date:p.date,particulars:'Payment received ('+p.mode+(p.reference?' - '+p.reference:'')+') — '+i.invoiceNo,invoiceId:i.id,debit:0,credit:Number(p.amount)||0,sortKey:p.date+'_1'});
+  });
+ });
+ entries.sort((a,b)=>a.sortKey.localeCompare(b.sortKey));
+ let running=0;
+ entries=entries.map(e=>{running=round2(running+e.debit-e.credit);return Object.assign({},e,{balance:running});});
+
+ app.innerHTML=
+ '<div class="row between" style="margin-bottom:14px;">'+
+  '<div><h2 style="margin:0;">'+esc(client.name)+'</h2><div class="hint">'+esc(client.gstin||client.mobile||'')+'</div></div>'+
+  '<div class="row">'+
+   (client.mobile?'<button class="btn btn-sm" id="ledgerWaBtn">Send WhatsApp Reminder</button>':'')+
+   (client.email?'<button class="btn btn-sm" id="ledgerEmailBtn">Send Email Reminder</button>':'')+
+   '<button class="btn btn-sm" onclick="navigate(\'clients\')">Back to Clients</button>'+
+  '</div>'+
+ '</div>'+
+ '<div class="grid g4" style="margin-bottom:18px;">'+
+  statCard('Total Billed',fmtMoney(totalBilled),'')+
+  statCard('Total Received',fmtMoney(totalReceived),'')+
+  statCard('Outstanding',fmtMoney(outstanding),'')+
+  statCard('Open Invoices',openCount,'')+
+ '</div>'+
+ '<div class="tbl-wrap"><table class="ledger-tbl"><thead><tr><th>Date</th><th>Particulars</th><th class="num">Debit</th><th class="num">Credit</th><th class="num">Balance</th><th></th></tr></thead><tbody>'+
+ (entries.length? entries.map(e=>
+  '<tr><td>'+fmtDate(e.date)+'</td><td>'+esc(e.particulars)+'</td>'+
+  '<td class="num dr">'+(e.debit?fmtMoney(e.debit):'-')+'</td>'+
+  '<td class="num cr">'+(e.credit?fmtMoney(e.credit):'-')+'</td>'+
+  '<td class="num">'+fmtMoney(e.balance)+'</td>'+
+  '<td class="actions-cell"><span class="icon-link" onclick="navigate(\'invoice/view/'+e.invoiceId+'\')">View Invoice</span></td></tr>'
+ ).join('') : '<tr><td colspan="6"><div class="empty-state">No billing history yet.</div></td></tr>')+
+ '</tbody></table></div>';
+
+ const oldestOutstanding=active.filter(isOutstanding).sort((a,b)=>a.invoiceDate.localeCompare(b.invoiceDate))[0];
+ const waBtn=document.getElementById('ledgerWaBtn');
+ if(waBtn)waBtn.addEventListener('click',()=>{
+  if(!oldestOutstanding){toast('No outstanding invoices for this client','ok');return;}
+  sendReminderWhatsApp(oldestOutstanding);
+ });
+ const emBtn=document.getElementById('ledgerEmailBtn');
+ if(emBtn)emBtn.addEventListener('click',()=>{
+  if(!oldestOutstanding){toast('No outstanding invoices for this client','ok');return;}
+  sendReminderEmail(oldestOutstanding);
+ });
+}
+
+/* ============ REPORTS ============ */
+function renderReports(app){
+ let tab='billing';
+ app.innerHTML='<div class="pill-tabs" id="repTabs" style="margin-bottom:16px;">'+
+  [['billing','Billing'],['collections','Collections'],['outstanding','Outstanding']].map(t=>'<div class="pill'+(t[0]===tab?' active':'')+'" data-tab="'+t[0]+'">'+t[1]+'</div>').join('')+
+ '</div><div id="repBody"></div>';
+ document.getElementById('repBody').addEventListener('click',(e)=>{
+  const btn=e.target.closest('[data-export]'); if(!btn)return;
+  const id=btn.dataset.export;
+  const data=(window.__reportExports||{})[id];
+  if(!data)return;
+  const csv=[data.headers].concat(data.rows).map(r=>r.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8;'}),id+'_'+todayISO()+'.csv');
+ });
+ document.querySelectorAll('#repTabs .pill').forEach(p=>p.addEventListener('click',()=>{
+  tab=p.dataset.tab;
+  document.querySelectorAll('#repTabs .pill').forEach(x=>x.classList.toggle('active',x===p));
+  drawTab();
+ }));
+ function drawTab(){
+  const body=document.getElementById('repBody');
+  if(tab==='billing')body.innerHTML=renderBillingReport();
+  else if(tab==='collections')body.innerHTML=renderCollectionsReport();
+  else body.innerHTML=renderOutstandingReport();
+ }
+ drawTab();
+}
+function reportCard(title,headers,rows,exportId,moneyCols){
+ moneyCols=moneyCols||[];
+ window.__reportExports=window.__reportExports||{};
+ window.__reportExports[exportId]={headers,rows};
+ const displayRows=rows.map(r=>r.map((v,idx)=>moneyCols.includes(idx)?fmtMoney(v):v));
+ return '<div class="card"><div class="row between"><h3 style="margin:0;">'+esc(title)+'</h3><button type="button" class="btn btn-sm" data-export="'+exportId+'">Export CSV</button></div>'+
+  '<div class="tbl-wrap" style="max-height:320px;overflow:auto;margin-top:10px;"><table><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+
+  (displayRows.length? displayRows.map(r=>'<tr>'+r.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('') : '<tr><td colspan="'+headers.length+'"><div class="empty-state">No data</div></td></tr>')+
+  '</tbody></table></div></div>';
+}
+function renderBillingReport(){
+ const active=state.invoices.filter(isBilled);
+ const byMonth={}; active.forEach(i=>{const k=i.invoiceDate.slice(0,7); byMonth[k]=round2((byMonth[k]||0)+i.grandTotal);});
+ const monthRows=Object.keys(byMonth).sort().reverse().map(k=>[k,byMonth[k]]);
+ const byClient={}; active.forEach(i=>{const nm=clientName(i); byClient[nm]=round2((byClient[nm]||0)+i.grandTotal);});
+ const clientRows=Object.entries(byClient).sort((a,b)=>b[1]-a[1]);
+ const byService={}; active.forEach(i=>(i.lines||[]).forEach(l=>{const nm=l.description||'(unnamed)'; byService[nm]=round2((byService[nm]||0)+(l.lineTotal||0));}));
+ const serviceRows=Object.entries(byService).sort((a,b)=>b[1]-a[1]);
+ return '<div class="grid g2">'+
+  reportCard('Month-wise Billing',['Month','Amount'],monthRows,'BillingMonthWise',[1])+
+  reportCard('Client-wise Billing',['Client','Amount'],clientRows,'BillingClientWise',[1])+
+  reportCard('Service-wise Billing',['Service','Amount'],serviceRows,'BillingServiceWise',[1])+
+ '</div>';
+}
+function renderCollectionsReport(){
+ const active=state.invoices.filter(isBilled);
+ const byMonth={}; active.forEach(i=>paymentsOf(i).forEach(p=>{const k=(p.date||'').slice(0,7); if(!k)return; byMonth[k]=round2((byMonth[k]||0)+(Number(p.amount)||0));}));
+ const monthRows=Object.keys(byMonth).sort().reverse().map(k=>[k,byMonth[k]]);
+ const byClient={}; active.forEach(i=>{const nm=clientName(i); byClient[nm]=round2((byClient[nm]||0)+(i.amountReceived||0));});
+ const clientRows=Object.entries(byClient).filter(r=>r[1]>0).sort((a,b)=>b[1]-a[1]);
+ return '<div class="grid g2">'+
+  reportCard('Month-wise Collections',['Month','Amount'],monthRows,'CollectionsMonthWise',[1])+
+  reportCard('Client-wise Collections',['Client','Amount'],clientRows,'CollectionsClientWise',[1])+
+ '</div>';
+}
+function renderOutstandingReport(){
+ const list=state.invoices.filter(isOutstanding);
+ const byClient={}; list.forEach(i=>{const nm=clientName(i); byClient[nm]=round2((byClient[nm]||0)+invoiceBalance(i));});
+ const clientRows=Object.entries(byClient).sort((a,b)=>b[1]-a[1]);
+ const invoiceRows=list.slice().sort((a,b)=>a.invoiceDate.localeCompare(b.invoiceDate)).map(i=>[i.invoiceNo,clientName(i),fmtDate(i.invoiceDate),invoiceBalance(i)]);
+ const buckets={'0-30 Days':0,'31-60 Days':0,'61-90 Days':0,'Above 90 Days':0};
+ list.forEach(i=>{buckets[ageingBucket(ageInDays(i.invoiceDate))]=round2(buckets[ageingBucket(ageInDays(i.invoiceDate))]+invoiceBalance(i));});
+ const ageRows=Object.entries(buckets);
+ const overdueRows=list.filter(isOverdue).map(i=>[i.invoiceNo,clientName(i),fmtDate(i.dueDate),invoiceBalance(i)]);
+ return '<div class="grid g2">'+
+  reportCard('Client-wise Outstanding',['Client','Amount'],clientRows,'OutstandingClientWise',[1])+
+  reportCard('Ageing Report',['Bucket','Amount'],ageRows,'AgeingReport',[1])+
+  reportCard('Invoice-wise Outstanding',['Invoice','Client','Date','Balance'],invoiceRows,'OutstandingInvoiceWise',[3])+
+  reportCard('Overdue Report',['Invoice','Client','Due Date','Balance'],overdueRows,'OverdueReport',[3])+
+ '</div>';
+}
+
+/* ============ BACKUP / RESTORE ============ */
+const BACKUP_STALE_DAYS=7;
+function buildBackupPayload(){
+ return {version:2,exportedAt:new Date().toISOString(),firm:state.firm,clients:state.clients,services:state.services,engagements:state.engagements,invoices:state.invoices};
+}
+async function downloadBackup(){
+ downloadBlob(new Blob([JSON.stringify(buildBackupPayload(),null,2)],{type:'application/json'}), 'InvoicePro_Backup_'+todayISO()+'.json');
+ await setMeta('lastBackupAt',Date.now());
+ toast('Backup downloaded — keep the file somewhere safe','ok');
+}
+function backupStatus(){
+ const at=(state.meta||{}).lastBackupAt;
+ const days=at?ageInDays(localISO(new Date(at))):null;
+ return {at,days,stale:!at||days>BACKUP_STALE_DAYS};
+}
+function renderBackup(app){
+ const bs=backupStatus();
+ const lastBackupAt=bs.at, daysSince=bs.days, warnStale=bs.stale;
+ app.innerHTML=
+ (lastBackupAt?
+  '<div class="card" style="margin-bottom:16px;'+(warnStale?'border-color:var(--amber);':'')+'"><div class="row between">'+
+   '<div>Last Backup: <b>'+esc(new Date(lastBackupAt).toLocaleString('en-IN'))+'</b></div>'+
+   (warnStale?'<span style="color:var(--amber);font-weight:700;font-size:12.5px;">Backup recommended — last backup was '+daysSince+' days ago.</span>':'<span style="color:var(--green);font-weight:700;font-size:12.5px;">Up to date</span>')+
+  '</div></div>'
+  : '<div class="card" style="margin-bottom:16px;border-color:var(--amber);"><span style="color:var(--amber);font-weight:700;font-size:12.5px;">No backup has been taken yet on this device. Download one now.</span></div>')+
+ '<div class="grid g2">'+
+  '<div class="card"><h3>Backup All Data</h3><p class="hint">Exports Firm, Clients, Services, Engagements, Invoices and Settings as one portable JSON file.</p><button class="btn btn-primary" id="backupBtn">Download Backup (.json)</button></div>'+
+  '<div class="card"><h3>Restore Backup</h3><p class="hint">Restoring will overwrite all current data with the contents of the backup file. A safety backup of your current data is downloaded first.</p><input type="file" id="restoreInput" accept="application/json"></div>'+
+  '<div class="card"><h3>Export Invoice Register</h3><p class="hint">Export the full invoice register as CSV (opens in Excel).</p><button class="btn" id="exportRegBtn2">Export CSV</button></div>'+
+  '<div class="card"><h3>Data Summary</h3><p class="hint">'+state.clients.length+' clients &middot; '+state.services.length+' services &middot; '+state.engagements.length+' fee engagements &middot; '+state.invoices.length+' invoices stored locally in this browser.</p></div>'+
+  '<div class="card" style="border-color:var(--red);grid-column:1 / -1;"><h3 style="color:var(--red);">Danger Zone — Reset All Data</h3><p class="hint">Permanently erases Firm details, Clients, Services, Engagements and Invoices from this browser and restores default services. Take a backup first — this cannot be undone.</p><button class="btn btn-danger" id="resetDataBtn">Reset All Data</button></div>'+
+ '</div>';
+ document.getElementById('backupBtn').addEventListener('click',async()=>{
+  await downloadBackup();
+  renderRoute();
+ });
+ document.getElementById('exportRegBtn2').addEventListener('click',exportRegisterCsv);
+ document.getElementById('resetDataBtn').addEventListener('click',async()=>{
+  const step1=await confirmAsync('Reset All Data',
+   'This will permanently delete all Firm details, Clients, Services, Engagements and Invoices stored in this browser. Make sure you have downloaded a backup first. Do you want to continue?',
+   'Continue');
+  if(!step1)return;
+  const step2=await confirmAsync('Final Confirmation',
+   'This is your last chance to cancel. Once you proceed, every invoice, client and service record on this device will be erased immediately and cannot be recovered without a backup file. Reset everything now?',
+   'Yes, Erase Everything');
+  if(!step2)return;
+  await dbClear('firm'); await dbClear('clients'); await dbClear('services'); await dbClear('invoices'); await dbClear('engagements');
+  await loadState();
+  toast('All data has been reset','ok');
+  navigate('dashboard');
+ });
+ document.getElementById('restoreInput').addEventListener('change',(e)=>{
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async()=>{
+   try{
+    const data=JSON.parse(reader.result);
+    if(!data.firm || !Array.isArray(data.clients) || !Array.isArray(data.invoices)) throw new Error('Invalid backup file');
+    const hasIds=(arr)=>(arr||[]).every(r=>r && typeof r==='object' && r.id);
+    if(!data.firm.id || !hasIds(data.clients) || !hasIds(data.invoices) || !hasIds(data.services) || !hasIds(data.engagements) ||
+       (data.services!=null && !Array.isArray(data.services)) || (data.engagements!=null && !Array.isArray(data.engagements))) throw new Error('Invalid backup file');
+    confirmDialog('Restore Backup',
+     'This will overwrite ALL current data with the backup dated '+ (data.exportedAt? new Date(data.exportedAt).toLocaleString():'unknown') +
+     ' ('+data.clients.length+' clients, '+(data.services||[]).length+' services, '+data.invoices.length+' invoices). A safety backup of your current data will be downloaded first. This cannot be undone. Continue?',
+     'Restore',async()=>{
+     downloadBlob(new Blob([JSON.stringify(buildBackupPayload(),null,2)],{type:'application/json'}), 'InvoicePro_SafetyBackup_'+todayISO()+'.json');
+     await dbClear('firm'); await dbClear('clients'); await dbClear('services'); await dbClear('invoices'); await dbClear('engagements');
+     await dbPut('firm',data.firm);
+     for(const c of data.clients)await dbPut('clients',c);
+     for(const s of data.services||[])await dbPut('services',s);
+     for(const en of data.engagements||[])await dbPut('engagements',en);
+     for(const i of data.invoices)await dbPut('invoices',i);
+     await loadState();
+     toast('Backup restored (a safety copy of your previous data was downloaded)','ok');
+     navigate('dashboard');
+    });
+   }catch(err){toast('Invalid or corrupt backup file','err');}
+  };
+  reader.readAsText(file);
+ });
+}
+
+/* ============ DOCX GENERATION (ZIP built from scratch, no libraries) ============ */
+function makeCRCTable(){
+ let c, table=[];
+ for(let n=0;n<256;n++){
+  c=n;
+  for(let k=0;k<8;k++){c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);}
+  table[n]=c>>>0;
+ }
+ return table;
+}
+const CRC_TABLE=makeCRCTable();
+function crc32(bytes){
+ let crc=0^(-1);
+ for(let i=0;i<bytes.length;i++){crc=(crc>>>8)^CRC_TABLE[(crc^bytes[i])&0xFF];}
+ return (crc^(-1))>>>0;
+}
+function strToBytes(str){return new TextEncoder().encode(str);}
+function createZip(files){
+ let localParts=[], centralParts=[], offset=0;
+ for(const f of files){
+  const nameBytes=strToBytes(f.name);
+  const data=f.data;
+  const crc=crc32(data);
+  const local=new Uint8Array(30+nameBytes.length);
+  const dv=new DataView(local.buffer);
+  dv.setUint32(0,0x04034b50,true); dv.setUint16(4,20,true); dv.setUint16(6,0,true); dv.setUint16(8,0,true);
+  dv.setUint16(10,0,true); dv.setUint16(12,0x21,true); dv.setUint32(14,crc,true);
+  dv.setUint32(18,data.length,true); dv.setUint32(22,data.length,true);
+  dv.setUint16(26,nameBytes.length,true); dv.setUint16(28,0,true);
+  local.set(nameBytes,30);
+  localParts.push(local,data);
+  const central=new Uint8Array(46+nameBytes.length);
+  const dv2=new DataView(central.buffer);
+  dv2.setUint32(0,0x02014b50,true); dv2.setUint16(4,20,true); dv2.setUint16(6,20,true); dv2.setUint16(8,0,true);
+  dv2.setUint16(10,0,true); dv2.setUint16(12,0,true); dv2.setUint16(14,0x21,true); dv2.setUint32(16,crc,true);
+  dv2.setUint32(20,data.length,true); dv2.setUint32(24,data.length,true);
+  dv2.setUint16(28,nameBytes.length,true); dv2.setUint16(30,0,true); dv2.setUint16(32,0,true);
+  dv2.setUint16(34,0,true); dv2.setUint16(36,0,true); dv2.setUint32(38,0,true); dv2.setUint32(42,offset,true);
+  central.set(nameBytes,46);
+  centralParts.push(central);
+  offset+=local.length+data.length;
+ }
+ const centralStart=offset;
+ let centralSize=0; centralParts.forEach(c=>centralSize+=c.length);
+ const end=new Uint8Array(22);
+ const dv3=new DataView(end.buffer);
+ dv3.setUint32(0,0x06054b50,true); dv3.setUint16(4,0,true); dv3.setUint16(6,0,true);
+ dv3.setUint16(8,files.length,true); dv3.setUint16(10,files.length,true);
+ dv3.setUint32(12,centralSize,true); dv3.setUint32(16,centralStart,true); dv3.setUint16(20,0,true);
+ const all=[...localParts,...centralParts,end];
+ let total=0; all.forEach(p=>total+=p.length);
+ const out=new Uint8Array(total);
+ let pos=0; all.forEach(p=>{out.set(p,pos);pos+=p.length;});
+ return out;
+}
+function xmlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function docxPara(text,opts){
+ opts=opts||{};
+ const bold=opts.bold?'<w:b/>':''; const sz=opts.size?'<w:sz w:val="'+opts.size+'"/>':'';
+ const align=opts.align?'<w:jc w:val="'+opts.align+'"/>':'';
+ return '<w:p><w:pPr>'+align+'<w:rPr>'+bold+sz+'</w:rPr></w:pPr><w:r><w:rPr>'+bold+sz+'</w:rPr><w:t xml:space="preserve">'+xmlEsc(text)+'</w:t></w:r></w:p>';
+}
+function docxParaMultiline(text,opts){
+ opts=opts||{};
+ const bold=opts.bold?'<w:b/>':''; const sz=opts.size?'<w:sz w:val="'+opts.size+'"/>':'';
+ const align=opts.align?'<w:jc w:val="'+opts.align+'"/>':'';
+ const lines=String(text||'').split(/\r\n|\r|\n/);
+ const runs=lines.map((line,i)=>'<w:r><w:rPr>'+bold+sz+'</w:rPr>'+(i>0?'<w:br/>':'')+'<w:t xml:space="preserve">'+xmlEsc(line)+'</w:t></w:r>').join('');
+ return '<w:p><w:pPr>'+align+'<w:rPr>'+bold+sz+'</w:rPr></w:pPr>'+runs+'</w:p>';
+}
+function docxMultiLabelValuePara(pairs,opts){
+ opts=opts||{};
+ const sz=opts.size?'<w:sz w:val="'+opts.size+'"/>':'';
+ const align=opts.align?'<w:jc w:val="'+opts.align+'"/>':'';
+ const sep=opts.sep||'   ';
+ let runs='';
+ pairs.forEach((p,i)=>{
+  if(i>0)runs+='<w:r><w:rPr>'+sz+'</w:rPr><w:t xml:space="preserve">'+xmlEsc(sep)+'</w:t></w:r>';
+  runs+='<w:r><w:rPr><w:b/>'+sz+'</w:rPr><w:t xml:space="preserve">'+xmlEsc(p.label+' ')+'</w:t></w:r>';
+  runs+='<w:r><w:rPr>'+sz+'</w:rPr><w:t xml:space="preserve">'+xmlEsc(p.value)+'</w:t></w:r>';
+ });
+ return '<w:p><w:pPr>'+align+'<w:rPr>'+sz+'</w:rPr></w:pPr>'+runs+'</w:p>';
+}
+function docxLabelValuePara(label,value,opts){
+ return docxMultiLabelValuePara([{label,value}],opts);
+}
+function docxCell(text,opts){
+ opts=opts||{};
+ const w=opts.width?'<w:tcW w:w="'+opts.width+'" w:type="dxa"/>':'<w:tcW w:w="2000" w:type="auto"/>';
+ return '<w:tc><w:tcPr>'+w+'</w:tcPr>'+docxPara(text,opts)+'</w:tc>';
+}
+function docxRow(cells){return '<w:tr>'+cells.join('')+'</w:tr>';}
+function dataUrlToBytes(dataUrl){
+ const base64=(dataUrl||'').split(',')[1]||'';
+ const binStr=atob(base64);
+ const bytes=new Uint8Array(binStr.length);
+ for(let i=0;i<binStr.length;i++)bytes[i]=binStr.charCodeAt(i);
+ return bytes;
+}
+function docxImagePara(relId,widthPx,heightPx,align){
+ const cx=Math.max(1,Math.round(widthPx*9525)), cy=Math.max(1,Math.round(heightPx*9525));
+ const alignTag=align?'<w:jc w:val="'+align+'"/>':'';
+ return '<w:p><w:pPr>'+alignTag+'</w:pPr><w:r><w:drawing>'+
+  '<wp:inline distT="0" distB="0" distL="0" distR="0">'+
+   '<wp:extent cx="'+cx+'" cy="'+cy+'"/>'+
+   '<wp:docPr id="1" name="Picture"/>'+
+   '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
+    '<pic:pic>'+
+     '<pic:nvPicPr><pic:cNvPr id="0" name="Picture"/><pic:cNvPicPr/></pic:nvPicPr>'+
+     '<pic:blipFill><a:blip r:embed="'+relId+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'+
+     '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'+
+    '</pic:pic>'+
+   '</a:graphicData></a:graphic>'+
+  '</wp:inline>'+
+ '</w:drawing></w:r></w:p>';
+}
+function buildInvoiceDocxXml(inv,logoAsset,sigAsset){
+ const f=inv.firmSnapshot||state.firm, c=inv.clientSnapshot||{};
+ const title=inv.gstApplicable?'TAX INVOICE':'INVOICE';
+ const showTaxable=!!inv.gstApplicable;
+ const hasDiscount=inv.lines.some(l=>(l.discountAmt||0)>0.004);
+ let body='';
+ if(logoAsset){
+  const scale=Math.min(1,90/logoAsset.width,90/logoAsset.height);
+  body+=docxImagePara(logoAsset.relId,logoAsset.width*scale,logoAsset.height*scale);
+ }
+ body+=docxPara(f.name||'Firm Name',{bold:true,size:'32'});
+ body+=docxPara(f.address||'',{size:'18'});
+ if(f.gstin) body+=docxLabelValuePara('GSTIN:',f.gstin,{size:'18'});
+ if(f.pan) body+=docxLabelValuePara('PAN:',f.pan,{size:'18'});
+ if(f.phone) body+=docxLabelValuePara('Ph:',f.phone,{size:'18'});
+ if(f.email) body+=docxLabelValuePara('Email:',f.email,{size:'18'});
+ body+=docxPara('',{});
+ body+=docxPara(title,{bold:true,size:'28'});
+ const docxMeta=[{label:'Invoice No:',value:invNoLabel(inv)},{label:'Date:',value:fmtDate(inv.invoiceDate)},{label:'FY:',value:inv.fy}];
+ if(inv.dueDate)docxMeta.push({label:'Due Date:',value:fmtDate(inv.dueDate)});
+ body+=docxMultiLabelValuePara(docxMeta,{size:'20'});
+ body+=docxPara('',{});
+ body+=docxPara('Billed To: '+(c.name||''),{bold:true,size:'20'});
+ body+=docxPara(c.billingAddress||'',{size:'18'});
+ if(c.gstin) body+=docxLabelValuePara('GSTIN:',c.gstin,{size:'18'});
+ if(c.pan) body+=docxLabelValuePara('PAN:',c.pan,{size:'18'});
+ body+=docxLabelValuePara('State:',(c.stateName||'')+(c.stateCode?' ('+c.stateCode+')':''),{size:'18'});
+ if(c.mobile) body+=docxLabelValuePara('Mobile:',c.mobile,{size:'18'});
+ if(c.email) body+=docxLabelValuePara('Email:',c.email,{size:'18'});
+ body+=docxPara('',{});
+ let headerCells=[docxCell('#',{bold:true}),docxCell('Description',{bold:true})];
+ if(hasDiscount)headerCells.push(docxCell('Discount',{bold:true}));
+ if(showTaxable)headerCells.push(docxCell('Taxable',{bold:true}));
+ if(inv.gstApplicable)headerCells.push(docxCell(inv.interState?'IGST':'CGST+SGST',{bold:true}));
+ headerCells.push(docxCell('Total',{bold:true}));
+ let rows=[docxRow(headerCells)];
+ inv.lines.forEach((l,i)=>{
+  const gst=inv.interState?l.igst:round2(l.cgst+l.sgst);
+  let cells=[docxCell(String(i+1)),docxCell(l.description||'')];
+  if(hasDiscount)cells.push(docxCell(l.discountAmt?fmtMoney(l.discountAmt):'-'));
+  if(showTaxable)cells.push(docxCell(fmtMoney(l.taxable)));
+  if(inv.gstApplicable)cells.push(docxCell(fmtMoney(gst)));
+  cells.push(docxCell(fmtMoney(l.lineTotal)));
+  rows.push(docxRow(cells));
+ });
+ const table='<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/><w:tblW w:w="0" w:type="auto"/><w:tblBorders>'+
+  '<w:top w:val="single" w:sz="4"/><w:left w:val="single" w:sz="4"/><w:bottom w:val="single" w:sz="4"/><w:right w:val="single" w:sz="4"/><w:insideH w:val="single" w:sz="4"/><w:insideV w:val="single" w:sz="4"/></w:tblBorders></w:tblPr>'+rows.join('')+'</w:tbl>';
+ body+=table;
+ body+=docxPara('',{});
+ body+=docxPara('Sub Total: '+fmtMoney(inv.subTotal),{size:'20',align:'right'});
+ if(inv.discountTotal>0) body+=docxPara('Discount: -'+fmtMoney(inv.discountTotal),{size:'20',align:'right'});
+ if(showTaxable) body+=docxPara('Taxable Value: '+fmtMoney(inv.taxableTotal),{size:'20',align:'right'});
+ if(inv.gstApplicable){
+  if(inv.interState) body+=docxPara('IGST: '+fmtMoney(inv.igstTotal),{size:'20',align:'right'});
+  else{ body+=docxPara('CGST: '+fmtMoney(inv.cgstTotal),{size:'20',align:'right'}); body+=docxPara('SGST: '+fmtMoney(inv.sgstTotal),{size:'20',align:'right'}); }
+ }
+ body+=docxPara('Round Off: '+fmtMoney(inv.roundOff),{size:'20',align:'right'});
+ body+=docxPara('Grand Total: '+fmtMoney(inv.grandTotal),{bold:true,size:'24',align:'right'});
+ body+=docxPara('',{});
+ body+=docxLabelValuePara('Amount in Words:',inv.amountInWords,{size:'18'});
+ body+=docxPara('',{});
+ body+=docxPara('Payment Details',{bold:true,size:'18'});
+ if(f.bankName){
+  const bankPairs=[{label:'Bank:',value:f.bankName},{label:'A/c:',value:f.accountNumber||''},{label:'IFSC:',value:f.ifsc||''}];
+  if(f.branch)bankPairs.push({label:'Branch:',value:f.branch});
+  body+=docxMultiLabelValuePara(bankPairs,{size:'18'});
+ }
+ if(f.upi) body+=docxLabelValuePara('UPI ID:',f.upi,{size:'18'});
+ if(!f.bankName && !f.upi) body+=docxPara('No payment details on file',{size:'18'});
+ body+=docxPara('',{});
+ body+=docxParaMultiline(inv.notes||'',{size:'16'});
+ body+=docxPara('',{});
+ body+=docxPara('For '+(f.name||''),{bold:true,size:'18',align:'center'});
+ if(sigAsset){
+  const scale=Math.min(1,150/sigAsset.width,60/sigAsset.height);
+  body+=docxImagePara(sigAsset.relId,sigAsset.width*scale,sigAsset.height*scale,'center');
+ } else {
+  body+=docxPara('',{}); body+=docxPara('',{}); body+=docxPara('',{}); body+=docxPara('',{});
+ }
+ body+=docxPara((f.signatoryName||'Authorised Signatory'),{bold:true,size:'18',align:'center'});
+ if(f.signatoryName) body+=docxPara((f.signatoryDesignation||'Authorised Signatory'),{size:'16',align:'center'});
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+  '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '+
+  'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" '+
+  'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '+
+  'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" '+
+  'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+  '<w:body>'+body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1000" w:right="1000" w:bottom="1000" w:left="1000"/></w:sectPr></w:body></w:document>';
+}
+async function downloadInvoiceDocx(inv){
+ const f=inv.firmSnapshot||state.firm;
+ const rawAssets=await getFirmImageAssets(f);
+ const relEntries=[{id:'rId1',type:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles',target:'styles.xml'}];
+ const mediaFiles=[];
+ let logoAsset=null, sigAsset=null;
+ if(rawAssets.logo){
+  logoAsset={relId:'rId2',width:rawAssets.logo.width,height:rawAssets.logo.height};
+  relEntries.push({id:logoAsset.relId,type:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image',target:'media/logo.jpeg'});
+  mediaFiles.push({name:'word/media/logo.jpeg',data:dataUrlToBytes(rawAssets.logo.dataUrl)});
+ }
+ if(rawAssets.signature){
+  sigAsset={relId:'rId'+(logoAsset?3:2),width:rawAssets.signature.width,height:rawAssets.signature.height};
+  relEntries.push({id:sigAsset.relId,type:'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image',target:'media/signature.jpeg'});
+  mediaFiles.push({name:'word/media/signature.jpeg',data:dataUrlToBytes(rawAssets.signature.dataUrl)});
+ }
+ const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+  '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+  '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+  '<Default Extension="xml" ContentType="application/xml"/>'+
+  '<Default Extension="jpeg" ContentType="image/jpeg"/>'+
+  '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+
+  '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'+
+  '</Types>';
+ const rootRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+  '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+  '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>'+
+  '</Relationships>';
+ const docRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+  '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+  relEntries.map(r=>'<Relationship Id="'+r.id+'" Type="'+r.type+'" Target="'+r.target+'"/>').join('')+
+  '</Relationships>';
+ const styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+  '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'+
+  '<w:style w:type="table" w:styleId="TableGrid"><w:name w:val="Table Grid"/><w:tblPr><w:tblBorders>'+
+  '<w:top w:val="single" w:sz="4"/><w:left w:val="single" w:sz="4"/><w:bottom w:val="single" w:sz="4"/><w:right w:val="single" w:sz="4"/><w:insideH w:val="single" w:sz="4"/><w:insideV w:val="single" w:sz="4"/></w:tblBorders></w:tblPr></w:style>'+
+  '</w:styles>';
+ const documentXml=buildInvoiceDocxXml(inv,logoAsset,sigAsset);
+ const files=[
+  {name:'[Content_Types].xml',data:strToBytes(contentTypes)},
+  {name:'_rels/.rels',data:strToBytes(rootRels)},
+  {name:'word/document.xml',data:strToBytes(documentXml)},
+  {name:'word/_rels/document.xml.rels',data:strToBytes(docRels)},
+  {name:'word/styles.xml',data:strToBytes(styles)}
+ ].concat(mediaFiles);
+ const zipBytes=createZip(files);
+ const blob=new Blob([zipBytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+ const clientName2=(inv.clientSnapshot&&inv.clientSnapshot.name)?inv.clientSnapshot.name.replace(/[^a-z0-9]+/gi,'_'):'Client';
+ const fname=(inv.invoiceNo||'DRAFT').replace(/[^a-z0-9]+/gi,'_')+'_'+clientName2+'_'+inv.invoiceDate+'.docx';
+ downloadBlob(blob,fname);
+ toast('Word document downloaded','ok');
+}
+
+/* ============ PDF GENERATION (real text PDF, built from scratch — no libraries, no rasterization) ============ */
+function asciiSafe(s){
+ return String(s==null?'':s).split('').map(ch=>{
+  const code=ch.charCodeAt(0);
+  if(code===0x20B9)return 'Rs';
+  return (code>31 && code<127) ? ch : '?';
+ }).join('');
+}
+function pdfMoneyStr(n){
+ n=Number(n)||0;
+ return n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function renderRupeeGlyphJpeg(pixelSize){
+ const fontSpec=pixelSize+'px Arial, Helvetica, sans-serif';
+ const probe=document.createElement('canvas');
+ probe.width=probe.height=Math.round(pixelSize*3);
+ const pctx=probe.getContext('2d');
+ pctx.font=fontSpec;
+ const m=pctx.measureText('₹');
+ const ascent=(m.actualBoundingBoxAscent>0)?Math.ceil(m.actualBoundingBoxAscent):Math.ceil(pixelSize*0.72);
+ const descent=(m.actualBoundingBoxDescent>0)?Math.ceil(m.actualBoundingBoxDescent):0;
+ const glyphW=Math.ceil(m.width)||Math.ceil(pixelSize*0.6);
+ const pad=Math.max(2,Math.round(pixelSize*0.05));
+ const w=glyphW+pad*2, h=ascent+descent+pad*2;
+ const canvas=document.createElement('canvas');
+ canvas.width=w; canvas.height=h;
+ const ctx=canvas.getContext('2d');
+ ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h);
+ ctx.fillStyle='#000000';
+ ctx.font=fontSpec;
+ ctx.textBaseline='alphabetic';
+ const baselineY=pad+ascent;
+ ctx.fillText('₹',pad,baselineY);
+ return {dataUrl:canvas.toDataURL('image/jpeg',0.97),width:w,height:h,baselineFrac:(h-baselineY)/h,capFrac:ascent/h};
+}
+function pdfEscStr(s){
+ return String(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+}
+const HELV_W={32:278,33:278,34:355,35:556,36:556,37:889,38:667,39:191,40:333,41:333,42:389,43:584,44:278,45:333,46:278,47:278,48:556,49:556,50:556,51:556,52:556,53:556,54:556,55:556,56:556,57:556,58:278,59:278,60:584,61:584,62:584,63:556,64:1015,65:667,66:667,67:722,68:722,69:667,70:611,71:778,72:722,73:278,74:500,75:667,76:556,77:833,78:722,79:778,80:667,81:778,82:722,83:667,84:611,85:722,86:667,87:944,88:667,89:667,90:611,91:278,92:278,93:278,94:469,95:556,96:333,97:556,98:556,99:500,100:556,101:556,102:278,103:556,104:556,105:222,106:222,107:500,108:222,109:833,110:556,111:556,112:556,113:556,114:333,115:500,116:278,117:556,118:500,119:722,120:500,121:500,122:500,123:334,124:260,125:334,126:584};
+const HELVB_W={32:278,33:333,34:474,35:556,36:556,37:889,38:722,39:238,40:333,41:333,42:389,43:584,44:278,45:333,46:278,47:278,48:556,49:556,50:556,51:556,52:556,53:556,54:556,55:556,56:556,57:556,58:333,59:333,60:584,61:584,62:584,63:611,64:975,65:722,66:722,67:722,68:722,69:667,70:611,71:778,72:722,73:278,74:556,75:722,76:611,77:833,78:722,79:778,80:667,81:778,82:722,83:667,84:611,85:722,86:667,87:944,88:667,89:667,90:611,91:333,92:278,93:333,94:584,95:556,96:333,97:556,98:611,99:556,100:611,101:556,102:333,103:611,104:611,105:278,106:278,107:556,108:278,109:889,110:611,111:611,112:611,113:611,114:389,115:556,116:333,117:611,118:556,119:778,120:556,121:556,122:500,123:389,124:280,125:389,126:584};
+function textWidth(str,size,bold){
+ const table=bold?HELVB_W:HELV_W;
+ str=asciiSafe(str);
+ let w=0;
+ for(let i=0;i<str.length;i++){
+  const code=str.charCodeAt(i);
+  w+=(table[code]!==undefined?table[code]:556);
+ }
+ return w*size/1000;
+}
+function splitLongWord(w,maxWidth,size,bold){
+ const parts=[]; let piece='';
+ for(let i=0;i<w.length;i++){
+  const trial=piece+w[i];
+  if(piece && textWidth(trial,size,bold)>maxWidth){parts.push(piece);piece=w[i];}
+  else piece=trial;
+ }
+ if(piece)parts.push(piece);
+ return parts;
+}
+function wrapProp(text,maxWidth,size,bold){
+ text=asciiSafe(String(text||'').replace(/\s+/g,' ').trim());
+ if(!text)return [''];
+ const words=text.split(' ');
+ const lines=[]; let cur='';
+ words.forEach(w=>{
+  if(textWidth(w,size,bold)>maxWidth){
+   const pieces=splitLongWord(w,maxWidth,size,bold);
+   pieces.forEach((p,idx)=>{
+    if(idx===0){
+     const trial=cur?cur+' '+p:p;
+     if(textWidth(trial,size,bold)>maxWidth){if(cur)lines.push(cur);cur=p;}
+     else cur=trial;
+    } else { lines.push(cur); cur=p; }
+   });
+   return;
+  }
+  const trial=cur?cur+' '+w:w;
+  if(textWidth(trial,size,bold)>maxWidth){if(cur)lines.push(cur);cur=w;}
+  else cur=trial;
+ });
+ if(cur)lines.push(cur);
+ return lines.length?lines:[''];
+}
+function wrapPropMultiline(text,maxWidth,size,bold){
+ const rawLines=String(text||'').split(/\r\n|\r|\n/);
+ let out=[];
+ rawLines.forEach(line=>{ out=out.concat(wrapProp(line,maxWidth,size,bold)); });
+ return out;
+}
+function bytesToBinaryString(bytes){
+ const CHUNK=0x8000; let result='';
+ for(let i=0;i<bytes.length;i+=CHUNK){
+  result+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));
+ }
+ return result;
+}
+function buildPdfFile(pageW,pageH,contentStream,images){
+ images=images||[];
+ let out='%PDF-1.4\n';
+ const offsets=[]; let objCount=0;
+ function add(s){objCount++;offsets[objCount-1]=out.length;out+=s;return objCount;}
+ const imageObjNums=images.map((img,i)=>7+i);
+ add('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+ add('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
+ const xobjDict=images.length?(' /XObject << '+images.map((img,i)=>'/'+img.id+' '+imageObjNums[i]+' 0 R').join(' ')+' >>'):'';
+ add('3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+pageW+' '+pageH+'] /Resources << /Font << /F1 4 0 R /F2 5 0 R >>'+xobjDict+' >> /Contents 6 0 R >>\nendobj\n');
+ add('4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\nendobj\n');
+ add('5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>\nendobj\n');
+ add('6 0 obj\n<< /Length '+contentStream.length+' >>\nstream\n'+contentStream+'\nendstream\nendobj\n');
+ images.forEach((img,i)=>{
+  const binStr=bytesToBinaryString(img.jpegBytes);
+  const dict='<< /Type /XObject /Subtype /Image /Width '+img.widthPx+' /Height '+img.heightPx+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+img.jpegBytes.length+' >>';
+  add(imageObjNums[i]+' 0 obj\n'+dict+'\nstream\n'+binStr+'\nendstream\nendobj\n');
+ });
+ const totalObjs=objCount;
+ const xrefStart=out.length;
+ let xref='xref\n0 '+(totalObjs+1)+'\n0000000000 65535 f \n';
+ for(let i=0;i<totalObjs;i++)xref+=String(offsets[i]).padStart(10,'0')+' 00000 n \n';
+ out+=xref;
+ out+='trailer\n<< /Size '+(totalObjs+1)+' /Root 1 0 R >>\nstartxref\n'+xrefStart+'\n%%EOF';
+ const bytes=new Uint8Array(out.length);
+ for(let i=0;i<out.length;i++)bytes[i]=out.charCodeAt(i)&0xFF;
+ return bytes;
+}
+function createPdfCanvas(){
+ const ops=[];
+ function raw(s){ops.push(s);}
+ function text(x,y,str,font,size){
+  raw('BT');
+  raw('/'+font+' '+size+' Tf');
+  raw('1 0 0 1 '+x.toFixed(2)+' '+y.toFixed(2)+' Tm');
+  raw('('+pdfEscStr(asciiSafe(str))+') Tj');
+  raw('ET');
+ }
+ function textColor(x,y,str,font,size,r,g,b){
+  raw('BT');
+  raw(r.toFixed(3)+' '+g.toFixed(3)+' '+b.toFixed(3)+' rg');
+  raw('/'+font+' '+size+' Tf');
+  raw('1 0 0 1 '+x.toFixed(2)+' '+y.toFixed(2)+' Tm');
+  raw('('+pdfEscStr(asciiSafe(str))+') Tj');
+  raw('ET');
+  raw('0 0 0 rg');
+ }
+ function line(x1,y1,x2,y2,w){
+  raw((w||0.75).toFixed(2)+' w');
+  raw('0 G');
+  raw(x1.toFixed(2)+' '+y1.toFixed(2)+' m');
+  raw(x2.toFixed(2)+' '+y2.toFixed(2)+' l');
+  raw('S');
+ }
+ function rectStroke(x,y,w,h){
+  raw('0 G');
+  raw('0.75 w');
+  raw(x.toFixed(2)+' '+y.toFixed(2)+' '+w.toFixed(2)+' '+h.toFixed(2)+' re');
+  raw('S');
+ }
+ function rectFill(x,y,w,h,r,g,b){
+  raw(r.toFixed(3)+' '+g.toFixed(3)+' '+b.toFixed(3)+' rg');
+  raw(x.toFixed(2)+' '+y.toFixed(2)+' '+w.toFixed(2)+' '+h.toFixed(2)+' re');
+  raw('f');
+  raw('0 0 0 rg');
+ }
+ function image(id,x,y,w,h){
+  raw('q');
+  raw(w.toFixed(2)+' 0 0 '+h.toFixed(2)+' '+x.toFixed(2)+' '+y.toFixed(2)+' cm');
+  raw('/'+id+' Do');
+  raw('Q');
+ }
+ return {ops,raw,text,textColor,line,rectStroke,rectFill,image};
+}
+async function resolveFirmImageAsset(dataUrl,width,height,maxW,maxH){
+ if(!dataUrl)return null;
+ if(width && height)return {dataUrl,width,height};
+ try{ return await normalizeImageToJpeg(dataUrl,maxW,maxH,0.92); }
+ catch(err){ return null; }
+}
+async function getFirmImageAssets(f){
+ const logo=await resolveFirmImageAsset(f.logoDataUrl,f.logoWidth,f.logoHeight,420,220);
+ const signature=await resolveFirmImageAsset(f.signatureDataUrl,f.signatureWidth,f.signatureHeight,320,140);
+ return {logo,signature};
+}
+function collectPdfImages(assets){
+ const images=[]; const meta={};
+ if(assets.logo){
+  images.push({id:'ImLogo',widthPx:assets.logo.width,heightPx:assets.logo.height,jpegBytes:dataUrlToBytes(assets.logo.dataUrl)});
+  meta.logo={id:'ImLogo',w:assets.logo.width,h:assets.logo.height};
+ }
+ if(assets.signature){
+  images.push({id:'ImSig',widthPx:assets.signature.width,heightPx:assets.signature.height,jpegBytes:dataUrlToBytes(assets.signature.dataUrl)});
+  meta.signature={id:'ImSig',w:assets.signature.width,h:assets.signature.height};
+ }
+ return {images,meta};
+}
+function createNullPdfCanvas(){
+ const noop=function(){};
+ return {ops:[],raw:noop,text:noop,textColor:noop,line:noop,rectStroke:noop,rectFill:noop,image:noop};
+}
+function layoutInvoicePdf(inv,imgMeta,cv,PH){
+ const f=inv.firmSnapshot||state.firm, c=inv.clientSnapshot||{};
+ imgMeta=imgMeta||{};
+ const PW=595, MX=40, LEFT=MX, RIGHT=PW-MX, CW=RIGHT-LEFT;
+ const NAVY=[0.078,0.129,0.239];
+ function rightX(str,size,bold){return RIGHT-textWidth(str,size,bold);}
+ function rupeeDisplayHeight(size,rm){
+  const targetCapHeight=size*0.70;
+  return targetCapHeight/(rm.capFrac||0.78);
+ }
+ function moneyWidth(amount,size,bold,neg){
+  const numStr=pdfMoneyStr(amount);
+  const signW=neg?textWidth('-',size,bold):0;
+  if(imgMeta.rupee){
+   const rm=imgMeta.rupee;
+   const dh=rupeeDisplayHeight(size,rm);
+   const dw=dh*(rm.w/rm.h);
+   return signW+dw+size*0.16+textWidth(numStr,size,bold);
+  }
+  return signW+textWidth('Rs. '+numStr,size,bold);
+ }
+ function drawMoney(x,y0,amount,size,bold,neg){
+  const numStr=pdfMoneyStr(amount);
+  const font=bold?'F2':'F1';
+  let x0=x;
+  if(neg){cv.text(x0,y0,'-',font,size);x0+=textWidth('-',size,bold);}
+  if(imgMeta.rupee){
+   const rm=imgMeta.rupee;
+   const dh=rupeeDisplayHeight(size,rm);
+   const dw=dh*(rm.w/rm.h);
+   cv.image(rm.id,x0,y0-rm.baselineFrac*dh,dw,dh);
+   const gap=size*0.16;
+   cv.text(x0+dw+gap,y0,numStr,font,size);
+   return;
+  }
+  cv.text(x0,y0,'Rs. '+numStr,font,size);
+ }
+ function drawLabelValue(x,y0,label,value,size){
+  cv.text(x,y0,label,'F2',size);
+  const lw=textWidth(label+' ',size,true);
+  cv.text(x+lw,y0,value,'F1',size);
+ }
+ function drawLabelValueRight(rightEdge,y0,label,value,size){
+  const lw=textWidth(label+' ',size,true);
+  const vw=textWidth(value,size,false);
+  const startX=rightEdge-lw-vw;
+  cv.text(startX,y0,label,'F2',size);
+  cv.text(startX+lw,y0,value,'F1',size);
+ }
+
+ let y=PH-MX-4;
+ const title=inv.gstApplicable?'TAX INVOICE':'INVOICE';
+
+ let firmX=LEFT;
+ const LOGO_BOX=42;
+ if(imgMeta.logo){
+  const scale=Math.min(1,LOGO_BOX/imgMeta.logo.w,LOGO_BOX/imgMeta.logo.h);
+  const dw=imgMeta.logo.w*scale, dh=imgMeta.logo.h*scale;
+  cv.image(imgMeta.logo.id,LEFT,y-dh+9,dw,dh);
+  firmX=LEFT+LOGO_BOX+10;
+ }
+ cv.text(firmX,y,asciiSafe(f.name||'Firm Name'),'F2',13);
+ cv.text(rightX(title,15,true),y,title,'F2',15);
+ y-=15;
+
+ const LH=12.5;
+ let yLeft=y, yRight=y;
+ wrapProp(f.address||'',300-(firmX-LEFT),8.5,false).forEach(l=>{cv.text(firmX,yLeft,l,'F1',8.5);yLeft-=LH;});
+ if(f.gstin){drawLabelValue(firmX,yLeft,'GSTIN:',f.gstin,8.5);yLeft-=LH;}
+ if(f.pan){drawLabelValue(firmX,yLeft,'PAN:',f.pan,8.5);yLeft-=LH;}
+ if(f.phone){drawLabelValue(firmX,yLeft,'Ph:',f.phone,8.5);yLeft-=LH;}
+ if(f.email){drawLabelValue(firmX,yLeft,'Email:',f.email,8.5);yLeft-=LH;}
+ const rightMetaLines=[{label:'Invoice No:',value:invNoLabel(inv)},{label:'Date:',value:fmtDate(inv.invoiceDate)},{label:'FY:',value:inv.fy||''}];
+ if(inv.dueDate)rightMetaLines.push({label:'Due Date:',value:fmtDate(inv.dueDate)});
+ rightMetaLines.forEach(item=>{drawLabelValueRight(RIGHT,yRight,item.label,item.value,9);yRight-=LH;});
+ y=Math.min(yLeft,yRight)-9;
+ cv.line(LEFT,y,RIGHT,y,1.2);
+ y-=20;
+
+ const boxW=(CW-14)/2;
+ const billedLines=[{t:'header',text:'BILLED TO'},{t:'name',text:c.name||''}];
+ wrapProp(c.billingAddress||'',boxW-16,8.5,false).forEach(l=>billedLines.push({t:'plain',text:l}));
+ if(c.gstin)billedLines.push({t:'lv',label:'GSTIN:',value:c.gstin});
+ if(c.pan)billedLines.push({t:'lv',label:'PAN:',value:c.pan});
+ billedLines.push({t:'lv',label:'State:',value:(c.stateName||'')+(c.stateCode?' ('+c.stateCode+')':'')});
+ if(c.mobile)billedLines.push({t:'lv',label:'Mobile:',value:c.mobile});
+ if(c.email)billedLines.push({t:'lv',label:'Email:',value:c.email});
+
+ const payLines=[{t:'header',text:'PAYMENT DETAILS'}];
+ if(f.bankName)payLines.push({t:'lv',label:'Bank:',value:f.bankName});
+ if(f.accountNumber)payLines.push({t:'lv',label:'A/c No:',value:f.accountNumber});
+ if(f.ifsc)payLines.push({t:'lv',label:'IFSC:',value:f.ifsc});
+ if(f.branch)payLines.push({t:'lv',label:'Branch:',value:f.branch});
+ if(f.upi)payLines.push({t:'lv',label:'UPI ID:',value:f.upi});
+ if(!f.bankName && !f.upi)payLines.push({t:'plain',text:'No payment details on file'});
+
+ const boxH=Math.max(billedLines.length,payLines.length)*LH+18;
+ cv.rectStroke(LEFT,y-boxH,boxW,boxH);
+ cv.rectStroke(LEFT+boxW+14,y-boxH,boxW,boxH);
+ let by=y-13;
+ billedLines.forEach(item=>{
+  if(item.t==='header')cv.text(LEFT+8,by,item.text,'F2',8);
+  else if(item.t==='name')cv.text(LEFT+8,by,item.text,'F2',8.5);
+  else if(item.t==='plain')cv.text(LEFT+8,by,item.text,'F1',8.5);
+  else drawLabelValue(LEFT+8,by,item.label,item.value,8.5);
+  by-=LH;
+ });
+ by=y-13;
+ payLines.forEach(item=>{
+  if(item.t==='header')cv.text(LEFT+boxW+22,by,item.text,'F2',8);
+  else if(item.t==='plain')cv.text(LEFT+boxW+22,by,item.text,'F1',8.5);
+  else drawLabelValue(LEFT+boxW+22,by,item.label,item.value,8.5);
+  by-=LH;
+ });
+ y=y-boxH-18;
+
+ const gstOn=inv.gstApplicable;
+ const showTaxable=gstOn;
+ const hasDiscount=inv.lines.some(l=>(l.discountAmt||0)>0.004);
+ let cols=[{key:'#',label:'#',w:22,align:'left'},{key:'desc',label:'DESCRIPTION',w:0,align:'left'}];
+ if(hasDiscount)cols.push({key:'disc',label:'DISCOUNT',w:70,align:'right'});
+ if(showTaxable)cols.push({key:'tax',label:'TAXABLE',w:75,align:'right'});
+ if(gstOn)cols.push({key:'gst',label:inv.interState?'IGST':'CGST+SGST',w:85,align:'right'});
+ cols.push({key:'total',label:'TOTAL',w:85,align:'right'});
+ const fixedW=cols.reduce((s,cc)=>s+(cc.key==='desc'?0:cc.w),0);
+ const descCol=cols.find(cc=>cc.key==='desc');
+ descCol.w=Math.max(80,CW-fixedW);
+ let cx=LEFT; cols.forEach(cc=>{cc.x=cx;cx+=cc.w;});
+
+ const tableTop=y;
+ const headerH=19;
+ cv.rectFill(LEFT,y-headerH,CW,headerH,NAVY[0],NAVY[1],NAVY[2]);
+ cols.forEach(cc=>{
+  const tx=cc.align==='right' ? cc.x+cc.w-6-textWidth(cc.label,7.5,true) : cc.x+6;
+  cv.textColor(tx,y-13,cc.label,'F2',7.5,1,1,1);
+ });
+ y-=headerH;
+ const rowsData=inv.lines.map((l,i)=>{
+  const gst=inv.interState?l.igst:round2(l.cgst+l.sgst);
+  const descText=(l.description||'')+(inv.gstApplicable&&l.sac?'  (SAC '+l.sac+')':'');
+  return {i,l,gst,wrapped:wrapProp(descText,descCol.w-12,8,false)};
+ });
+ rowsData.forEach(rd=>{
+  const rowH=Math.max(1,rd.wrapped.length)*LH+9;
+  cols.forEach(cc=>{
+   if(cc.key==='desc'){
+    rd.wrapped.forEach((ln,li)=>{cv.text(cc.x+6,y-13-li*LH,ln,'F1',8);});
+    return;
+   }
+   if(cc.key==='#'){
+    cv.text(cc.x+6,y-13,String(rd.i+1),'F1',8);
+    return;
+   }
+   if(cc.key==='disc' && !rd.l.discountAmt){
+    const tx=cc.x+cc.w-6-textWidth('-',8,false);
+    cv.text(tx,y-13,'-','F1',8);
+    return;
+   }
+   let amount=0;
+   if(cc.key==='disc')amount=rd.l.discountAmt;
+   else if(cc.key==='tax')amount=rd.l.taxable;
+   else if(cc.key==='gst')amount=rd.gst;
+   else if(cc.key==='total')amount=rd.l.lineTotal;
+   const w=moneyWidth(amount,8,false);
+   const tx=cc.x+cc.w-6-w;
+   drawMoney(tx,y-13,amount,8,false);
+  });
+  y-=rowH;
+  cv.line(LEFT,y,RIGHT,y,0.5);
+ });
+ cv.rectStroke(LEFT,y,CW,tableTop-y);
+ cols.forEach(cc=>{cv.line(cc.x,tableTop,cc.x,y,0.5);});
+ cv.line(RIGHT,tableTop,RIGHT,y,0.5);
+ y-=18;
+
+ let wy=y;
+ cv.text(LEFT,wy,'AMOUNT IN WORDS','F2',7.5);
+ wy-=LH;
+ wrapProp(inv.amountInWords,CW*0.55,8.5,false).forEach(l=>{cv.text(LEFT,wy,l,'F1',8.5);wy-=LH;});
+
+ const totalsX=RIGHT-200;
+ let ty=y;
+ function totalRow(label,val,bold,neg){
+  const size=bold?9.5:8.5, font=bold?'F2':'F1';
+  cv.text(totalsX,ty,label,font,size);
+  const w=moneyWidth(val,size,bold,neg);
+  drawMoney(RIGHT-w,ty,val,size,bold,neg);
+  ty-=20;
+ }
+ totalRow('Sub Total',inv.subTotal);
+ if(inv.discountTotal>0)totalRow('Discount',inv.discountTotal,false,true);
+ if(showTaxable)totalRow('Taxable Value',inv.taxableTotal);
+ if(gstOn){
+  if(inv.interState)totalRow('IGST',inv.igstTotal);
+  else{totalRow('CGST',inv.cgstTotal);totalRow('SGST',inv.sgstTotal);}
+ }
+ totalRow('Round Off',inv.roundOff);
+ ty-=5;
+ cv.line(totalsX,ty+15,RIGHT,ty+15,1.2);
+ totalRow('GRAND TOTAL',inv.grandTotal,true);
+ ty-=5;
+ totalRow('Amount Received',inv.amountReceived);
+ totalRow('Balance Due',round2(inv.grandTotal-inv.amountReceived));
+
+ y=Math.min(wy,ty)-16;
+
+ if(inv.notes){
+  wrapPropMultiline(inv.notes,CW,8,false).slice(0,14).forEach(l=>{cv.text(LEFT,y,l,'F1',8);y-=12;});
+  y-=9;
+ }
+
+ cv.line(LEFT,y,RIGHT,y,0.75);
+ y-=20;
+ cv.text(LEFT,y,'NOTES','F2',7.5);
+ cv.text(LEFT,y-12,'Thank you for your business.','F1',8.5);
+ const BLOCK_W=190, GAP_H=72;
+ function centerInBlock(str,size,bold){
+  return RIGHT-BLOCK_W/2-textWidth(str,size,bold)/2;
+ }
+ const forLine='For '+(f.name||'');
+ cv.text(centerInBlock(forLine,9.5,true),y,forLine,'F2',9.5);
+ y-=14;
+
+ if(imgMeta.signature){
+  const scale=Math.min(1,BLOCK_W/imgMeta.signature.w,GAP_H/imgMeta.signature.h);
+  const dw=imgMeta.signature.w*scale, dh=imgMeta.signature.h*scale;
+  cv.image(imgMeta.signature.id,RIGHT-BLOCK_W/2-dw/2,y-dh,dw,dh);
+  y-=dh+6;
+ } else {
+  y-=GAP_H;
+ }
+ const sigName=f.signatoryName||f.signatoryDesignation||'Authorised Signatory';
+ cv.text(centerInBlock(sigName,9,true),y,sigName,'F2',9);
+ if(f.signatoryName){
+  y-=12;
+  const role=f.signatoryDesignation||'Authorised Signatory';
+  cv.text(centerInBlock(role,8,false),y,role,'F1',8);
+ }
+
+ return y;
+}
+function buildInvoicePdfContent(inv,imgMeta){
+ const NOMINAL_PH=4000;
+ const finalYProbe=layoutInvoicePdf(inv,imgMeta,createNullPdfCanvas(),NOMINAL_PH);
+ const contentHeightUsed=NOMINAL_PH-finalYProbe;
+ const actualPH=Math.max(320,Math.min(3000,Math.round(contentHeightUsed+28)));
+ const realCv=createPdfCanvas();
+ layoutInvoicePdf(inv,imgMeta,realCv,actualPH);
+ return {content:realCv.ops.join('\n'),pageHeight:actualPH};
+}
+async function downloadInvoicePdf(inv){
+ const f=inv.firmSnapshot||state.firm;
+ const assets=await getFirmImageAssets(f);
+ const {images,meta}=collectPdfImages(assets);
+ try{
+  const rupee=renderRupeeGlyphJpeg(80);
+  images.push({id:'ImRupee',widthPx:rupee.width,heightPx:rupee.height,jpegBytes:dataUrlToBytes(rupee.dataUrl)});
+  meta.rupee={id:'ImRupee',w:rupee.width,h:rupee.height,baselineFrac:rupee.baselineFrac,capFrac:rupee.capFrac};
+ }catch(err){/* fall back to "Rs." text if canvas glyph rendering fails */}
+ const {content,pageHeight}=buildInvoicePdfContent(inv,meta);
+ const bytes=buildPdfFile(595,pageHeight,content,images);
+ const blob=new Blob([bytes],{type:'application/pdf'});
+ const clientName2=(inv.clientSnapshot&&inv.clientSnapshot.name)?inv.clientSnapshot.name.replace(/[^a-z0-9]+/gi,'_'):'Client';
+ const fname=(inv.invoiceNo||'DRAFT').replace(/[^a-z0-9]+/gi,'_')+'_'+clientName2+'_'+inv.invoiceDate+'.pdf';
+ downloadBlob(blob,fname);
+ toast('PDF downloaded','ok');
+}
+
+/* ============ INIT ============ */
+(async function init(){
+ try{
+  await loadState();
+  if(!location.hash)location.hash='#/dashboard';
+  renderRoute();
+ }catch(err){
+  document.getElementById('app').innerHTML='<div class="empty-state">Failed to initialise local database: '+esc(err.message||err)+'</div>';
+  console.error(err);
+ }
+})();
+</script>
+</body>
+</html>
